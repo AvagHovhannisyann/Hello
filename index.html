@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Function &amp; Esthetics — Навигационная хирургия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Manrope:wght@300;400;500;600&family=Marck+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Single-theme by choice: black studio, ivory type, champagne hairlines — matches the lab's own price poster */
+  --ink:#0a0a0b;
+  --panel:#131314;
+  --ivory:#ece6dc;
+  --muted:#9b958b;
+  --champagne:#c8b287;
+  --line:rgba(236,230,220,.14);
+  --display:"Cormorant Garamond","Times New Roman",serif;
+  --body:"Manrope","Helvetica Neue",Arial,sans-serif;
+  --script:"Marck Script","Brush Script MT",cursive;
+  /* layout: editorial column, full-bleed photography, hairline rules between sections */
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ink);color:var(--ivory);font-family:var(--body);font-weight:300;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img,video{max-width:100%;display:block}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:1px solid var(--champagne);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+.caps{font-family:var(--body);font-size:11px;letter-spacing:.28em;text-transform:uppercase;font-weight:500}
+.muted{color:var(--muted)}
+h1,h2,h3{font-family:var(--display);font-weight:300;margin:0;text-wrap:balance}
+h2{font-size:clamp(34px,5vw,54px);letter-spacing:.06em;text-transform:uppercase;line-height:1.05}
+.rule{display:flex;align-items:center;gap:14px;color:var(--champagne)}
+.rule::before,.rule::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,var(--champagne) 40%,var(--champagne) 60%,transparent);opacity:.55}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--champagne)}
+
+/* top bar */
+header.bar{position:sticky;top:0;z-index:20;background:rgba(10,10,11,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand svg{width:38px;height:38px}
+.brand b{font-family:var(--display);font-weight:400;font-size:19px;letter-spacing:.08em}
+nav{display:flex;gap:clamp(12px,2.6vw,30px)}
+nav a{text-decoration:none;color:var(--muted);transition:color .2s}
+nav a:hover{color:var(--ivory)}
+@media (max-width:620px){nav{display:none}}
+
+/* hero */
+.hero{position:relative;border-bottom:1px solid var(--line);overflow:hidden}
+.hero .photo{position:absolute;inset:0}
+.hero .photo img{width:100%;height:100%;object-fit:cover;object-position:60% 40%;opacity:.55}
+.hero .photo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--ink) 18%,rgba(10,10,11,.55) 55%,rgba(10,10,11,.15)),linear-gradient(0deg,var(--ink),transparent 35%)}
+.hero .wrap{position:relative;padding-top:clamp(56px,9vw,110px);padding-bottom:clamp(48px,7vw,90px);display:grid;gap:22px}
+.hero .seal{width:92px;height:92px}
+.hero h1{font-size:clamp(44px,8.2vw,104px);line-height:.95;letter-spacing:.07em;text-transform:uppercase;max-width:11ch}
+.script{font-family:var(--script);color:var(--champagne);font-size:clamp(26px,3.4vw,38px);line-height:1.1;transform:rotate(-4deg);transform-origin:left;margin:6px 0 4px}
+.lead{max-width:52ch;color:#d6d0c6;font-size:clamp(16px,1.6vw,18px)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:#d6d0c6;background:rgba(19,19,20,.6)}
+.chip em{font-style:normal;color:var(--champagne)}
+
+section{padding:clamp(64px,9vw,112px) 0;border-bottom:1px solid var(--line)}
+.head{display:grid;gap:18px;margin-bottom:clamp(32px,5vw,56px)}
+.head p{max-width:60ch;margin:0;color:var(--muted)}
+
+/* stack */
+.stack{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(28px,5vw,64px);align-items:start}
+@media (max-width:860px){.stack{grid-template-columns:1fr}}
+.render{position:relative;background:#000;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.render img{width:100%;aspect-ratio:935/1080;object-fit:cover}
+.render figcaption{position:absolute;left:16px;bottom:14px;right:16px;font-size:12px;color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;display:grid}
+.step{display:grid;grid-template-columns:64px 1fr 96px;gap:18px;align-items:center;padding:22px 0;border-top:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
+.steps li:last-child .step{border-bottom:1px solid var(--line)}
+.step .n{font-family:var(--display);font-size:40px;color:var(--champagne);line-height:1;font-variant-numeric:lining-nums}
+.step h3{font-size:25px;letter-spacing:.02em;margin-bottom:4px}
+.step p{margin:0;color:var(--muted);font-size:14.5px}
+.step img{width:96px;height:72px;object-fit:cover;border-radius:3px;border:1px solid var(--line);transition:transform .35s,border-color .35s}
+.step:hover img{transform:scale(1.04);border-color:var(--champagne)}
+@media (max-width:480px){.step{grid-template-columns:44px 1fr}.step img{display:none}.step .n{font-size:32px}}
+
+/* gallery */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.filters button{background:none;border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s}
+.filters button:hover{color:var(--ivory)}
+.filters button[aria-pressed="true"]{border-color:var(--champagne);color:var(--ink);background:var(--champagne)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+.card{position:relative;padding:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;cursor:zoom-in;text-align:left}
+.card img{width:100%;aspect-ratio:3/2;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .4s;opacity:.92}
+.card:hover img{transform:scale(1.045);opacity:1}
+.card .cap{position:absolute;left:0;right:0;bottom:0;padding:34px 16px 14px;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);display:flex;justify-content:space-between;align-items:end;gap:10px}
+.card .cap span{font-family:var(--display);font-size:19px;line-height:1.15}
+.card .cap small{font-size:11px;letter-spacing:.2em;color:var(--champagne);font-variant-numeric:tabular-nums}
+.card[hidden]{display:none}
+
+/* film */
+.film{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000}
+.film video{width:100%;aspect-ratio:976/576;object-fit:cover}
+.film .tag{position:absolute;top:16px;left:16px;display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory);background:rgba(0,0,0,.55);padding:7px 12px;border-radius:999px}
+.film .tag i{width:7px;height:7px;border-radius:50%;background:var(--champagne)}
+.film-note{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.ghost{background:none;border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer;font-size:13px}
+.ghost:hover{border-color:var(--champagne)}
+
+/* price */
+.price{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(28px,5vw,64px);align-items:start}
+@media (max-width:900px){.price{grid-template-columns:1fr}}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--line)}
+.list li:first-child{border-top:1px solid var(--line)}
+.list .i{font-family:var(--display);font-size:26px;color:var(--champagne)}
+.list .t{font-size:13px;letter-spacing:.14em;text-transform:uppercase;line-height:1.5}
+.list .t small{display:block;letter-spacing:.02em;text-transform:none;color:var(--muted);font-size:13px;margin-top:3px}
+.list .cur{color:var(--champagne);font-size:.8em}
+.list .p{font-family:var(--display);font-size:clamp(26px,3vw,32px);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.calc{border:1px solid var(--line);border-radius:4px;padding:clamp(20px,3vw,32px);background:var(--panel);display:grid;gap:20px}
+.calc h3{font-size:30px}
+.field{display:grid;gap:8px}
+.field label{font-size:13px;color:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{background:none;border:0;border-radius:999px;padding:9px 10px;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ivory);color:var(--ink)}
+.stepper{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:999px;padding:3px}
+.stepper button{width:38px;height:38px;border-radius:50%;border:0;background:rgba(236,230,220,.06);cursor:pointer;font-size:18px}
+.stepper button:hover{background:rgba(200,178,135,.25)}
+.stepper output{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;cursor:pointer}
+.toggle input{appearance:none;-webkit-appearance:none;width:44px;height:24px;border-radius:999px;background:rgba(236,230,220,.14);position:relative;cursor:pointer;flex:none;margin:0;transition:background .2s}
+.toggle input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--ivory);transition:transform .2s}
+.toggle input:checked{background:var(--champagne)}
+.toggle input:checked::after{transform:translateX(20px)}
+.total{border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.total strong{font-family:var(--display);font-weight:400;font-size:clamp(38px,5vw,48px);color:var(--champagne);font-variant-numeric:tabular-nums lining-nums}
+.fine{font-size:12.5px;color:var(--muted);margin:0}
+
+footer{padding:56px 0 64px}
+footer .wrap{display:grid;justify-items:center;gap:16px;text-align:center}
+footer svg{width:110px;height:110px}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:50;background:rgba(5,5,6,.96);display:none;grid-template-rows:auto 1fr auto;padding:16px clamp(12px,3vw,32px)}
+.lb.open{display:grid}
+.lb-top{display:flex;justify-content:space-between;align-items:center;height:48px}
+.lb-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:pan-y}
+.lb-stage img{max-height:100%;max-width:100%;object-fit:contain;border-radius:3px}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:rgba(10,10,11,.6);cursor:pointer;font-size:22px}
+.lb-nav:hover{border-color:var(--champagne)}
+.lb-prev{left:0}.lb-next{right:0}
+@media (max-width:620px){.lb-nav{display:none}}
+.lb-cap{max-width:760px;margin:0 auto;text-align:center;padding:16px 0 8px}
+.lb-cap h3{font-size:28px;margin-bottom:6px}
+.lb-cap p{margin:0;color:#cfc9bf;font-size:15px}
+.x{background:none;border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer;font-size:13px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="seal" viewBox="0 0 200 200">
+      <path id="arcTop" d="M30,100 a70,70 0 0 1 140,0" fill="none"/>
+      <path id="arcBot" d="M22,100 a78,78 0 0 0 156,0" fill="none"/>
+      <circle cx="100" cy="100" r="54" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="100" cy="27" r="2.6" fill="currentColor"/>
+      <circle cx="29" cy="112" r="2.2" fill="currentColor"/>
+      <circle cx="171" cy="112" r="2.2" fill="currentColor"/>
+      <!-- compass-style A -->
+      <path d="M100 58 L78 138 M100 58 L122 138" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M84 112 L116 112" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M100 48 L100 58" stroke="currentColor" stroke-width="1.4"/>
+      <circle cx="100" cy="58" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="100" y="134" text-anchor="middle" font-family="Manrope,Arial" font-size="7" letter-spacing="1.5" fill="currentColor">FDO</text>
+      <text font-family="Manrope,Arial" font-size="10.5" letter-spacing="3.2" fill="currentColor"><textPath href="#arcTop" startOffset="50%" text-anchor="middle">FUNCTION &amp; ESTHETICS</textPath></text>
+      <text font-family="Manrope,Arial" font-size="10.5" letter-spacing="3.2" fill="currentColor"><textPath href="#arcBot" startOffset="50%" text-anchor="middle">ARAM ABGARYAN</textPath></text>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Function & Esthetics, наверх">
+      <svg style="color:var(--ivory)"><use href="#seal"/></svg>
+      <b>Function &amp; Esthetics</b>
+    </a>
+    <nav class="caps" aria-label="Разделы">
+      <a href="#stack">Система</a>
+      <a href="#works">Работы</a>
+      <a href="#film">3D-план</a>
+      <a href="#price">Прайс</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="photo"><img src="assets/stack-front.jpg" alt="" fetchpriority="high"></div>
+    <div class="wrap">
+      <svg class="seal" style="color:var(--ivory)" aria-hidden="true"><use href="#seal"/></svg>
+      <div class="caps muted">Лаборатория Арама Абгаряна · Ереван</div>
+      <h1>Навигационная хирургия</h1>
+      <div class="script">Современные решения для вашей улыбки</div>
+      <p class="lead">Разборные навигационные шаблоны All-on-X и металлические SLP-шаблоны. Один цифровой план ведёт хирурга от фиксации базы до установки PMMA-протеза немедленной нагрузки.</p>
+      <div class="chips">
+        <span class="chip"><em>КЛКТ</em> · цифровое планирование</span>
+        <span class="chip"><em>Металл</em> или фотополимер</span>
+        <span class="chip"><em>PMMA</em> на 4, 6, 8 имплантатах</span>
+      </div>
+    </div>
+  </div>
+
+  <section id="stack">
+    <div class="wrap">
+      <div class="head">
+        <div class="rule"><span class="dot"></span></div>
+        <h2>Как работает разборный шаблон</h2>
+        <p>Все этажи садятся на одну базу, зафиксированную пинами. Поэтому сверление, установка имплантатов и посадка протеза идут в одной системе координат, без переноса ошибки с этапа на этап.</p>
+      </div>
+      <div class="stack">
+        <figure class="render" style="margin:0">
+          <img src="assets/plan-render.jpg" alt="3D-модель нижней челюсти и этажи навигационного шаблона в разборе" loading="lazy">
+          <figcaption>Цифровой план: этажи стека в разборе, нижняя челюсть</figcaption>
+        </figure>
+        <ol class="steps">
+          <li><button class="step" data-open="base-upper">
+            <span class="n">01</span>
+            <span><h3>База на пинах</h3><p>Опирается на кость и фиксируется пинами. Задаёт точку отсчёта для всех следующих этажей.</p></span>
+            <img src="assets/base-upper.jpg" alt="" loading="lazy">
+          </button></li>
+          <li><button class="step" data-open="drill-level">
+            <span class="n">02</span>
+            <span><h3>Этаж для сверления</h3><p>Металлические втулки задают ось и глубину каждого ложа под имплантат.</p></span>
+            <img src="assets/drill-level.jpg" alt="" loading="lazy">
+          </button></li>
+          <li><button class="step" data-open="lower-osteotomy">
+            <span class="n">03</span>
+            <span><h3>Ложа по плану</h3><p>Остеотомия идёт строго по втулкам. Позиции имплантатов совпадают с цифровым планом.</p></span>
+            <img src="assets/lower-osteotomy.jpg" alt="" loading="lazy">
+          </button></li>
+          <li><button class="step" data-open="stack-front">
+            <span class="n">04</span>
+            <span><h3>Протез в тот же день</h3><p>PMMA-протез садится на ту же базу и переносит запланированное положение зубов в рот.</p></span>
+            <img src="assets/stack-front.jpg" alt="" loading="lazy">
+          </button></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="works">
+    <div class="wrap">
+      <div class="head">
+        <div class="rule"><span class="dot"></span></div>
+        <h2>Работы лаборатории</h2>
+        <p>Шаблоны проверяются на моделях кости, напечатанных по КЛКТ пациента, до того как попадут в операционную. Нажмите на фото, чтобы открыть его крупно.</p>
+      </div>
+      <div class="filters" role="group" aria-label="Фильтр работ" id="filters"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section id="film">
+    <div class="wrap">
+      <div class="head">
+        <div class="rule"><span class="dot"></span></div>
+        <h2>3D-план кейса</h2>
+        <p>Верхняя челюсть по данным КЛКТ и все этажи навигационного стека, разобранные по порядку установки.</p>
+      </div>
+      <div class="film">
+        <video id="vid" src="assets/plan.mp4" poster="assets/plan-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Вращающаяся 3D-модель верхней челюсти со стеком шаблонов"></video>
+        <span class="tag"><i></i>Цифровое планирование</span>
+      </div>
+      <div class="film-note">
+        <span class="muted">21 сек · без звука</span>
+        <button class="ghost" id="vidToggle" type="button">Пауза</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="price">
+    <div class="wrap">
+      <div class="head">
+        <div class="rule"><span class="dot"></span></div>
+        <h2>Прайс-лист</h2>
+        <p>Навигационная хирургия. Цены в армянских драмах (AMD) за единицу работы по действующему прайсу лаборатории.</p>
+      </div>
+      <div class="price">
+        <ol class="list">
+          <li><span class="i">1</span><span class="t">Шаблон (разборный) All-on-X<small>1 этаж</small></span><span class="p">22 000 <span class="cur">֏</span></span></li>
+          <li><span class="i">2</span><span class="t">Шаблон (разборный) SLP, металл<small>1 этаж</small></span><span class="p">52 000 <span class="cur">֏</span></span></li>
+          <li><span class="i">3</span><span class="t">Сверление (втулка)<small>за 1 единицу</small></span><span class="p">4 000 <span class="cur">֏</span></span></li>
+          <li><span class="i">4</span><span class="t">Рентгеноконтрастный шаблон<small>для КЛКТ</small></span><span class="p">13 000 <span class="cur">֏</span></span></li>
+          <li><span class="i">5</span><span class="t">PMMA немедленная нагрузка<small>все на 4, 6, 8</small></span><span class="p">130 000 <span class="cur">֏</span></span></li>
+        </ol>
+
+        <form class="calc" id="calc" aria-labelledby="calcTitle">
+          <div>
+            <div class="caps muted" style="margin-bottom:6px">Расчёт кейса</div>
+            <h3 id="calcTitle">Соберите свой стек</h3>
+          </div>
+          <div class="field">
+            <label id="lblType">Тип шаблона</label>
+            <div class="seg" role="group" aria-labelledby="lblType">
+              <button type="button" id="tAll" aria-pressed="true" data-price="22000">All-on-X</button>
+              <button type="button" id="tSlp" aria-pressed="false" data-price="52000">SLP · металл</button>
+            </div>
+          </div>
+          <div class="field">
+            <label id="lblFloors">Количество этажей</label>
+            <div class="stepper" role="group" aria-labelledby="lblFloors">
+              <button type="button" id="fMinus" aria-label="Меньше этажей">−</button>
+              <output id="floors" aria-live="polite">3</output>
+              <button type="button" id="fPlus" aria-label="Больше этажей">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label id="lblSleeves">Втулки для сверления</label>
+            <div class="stepper" role="group" aria-labelledby="lblSleeves">
+              <button type="button" id="sMinus" aria-label="Меньше втулок">−</button>
+              <output id="sleeves" aria-live="polite">6</output>
+              <button type="button" id="sPlus" aria-label="Больше втулок">+</button>
+            </div>
+          </div>
+          <label class="toggle" for="xray">Рентгеноконтрастный шаблон <input type="checkbox" id="xray" checked></label>
+          <label class="toggle" for="pmma">PMMA немедленная нагрузка <input type="checkbox" id="pmma" checked></label>
+          <div class="total"><span class="muted">Итого</span><strong id="total">—</strong></div>
+          <p class="fine">Ориентировочный расчёт по прайсу. Точная стоимость определяется после планирования кейса.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <svg style="color:var(--champagne)" aria-hidden="true"><use href="#seal"/></svg>
+    <div class="caps">Function &amp; Esthetics · Aram Abgaryan</div>
+    <div class="muted" style="font-size:14px">Зуботехническая лаборатория · Ереван</div>
+  </div>
+</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+  <div class="lb-top">
+    <span class="caps muted" id="lbCount">01 / 12</span>
+    <button class="x" id="lbClose" type="button">Закрыть ✕</button>
+  </div>
+  <div class="lb-stage" id="lbStage">
+    <button class="lb-nav lb-prev" id="lbPrev" type="button" aria-label="Предыдущее фото">‹</button>
+    <img id="lbImg" alt="">
+    <button class="lb-nav lb-next" id="lbNext" type="button" aria-label="Следующее фото">›</button>
+  </div>
+  <div class="lb-cap"><h3 id="lbTitle"></h3><p id="lbText"></p></div>
+</div>
+
+<script>
+const WORKS = [
+  {id:"stack-front", t:"Протез на базе", d:"PMMA-протез немедленной нагрузки установлен на металлическую базу. Положение зубов перенесено из цифрового плана без ручной подгонки.", tags:["upper","guide"]},
+  {id:"base-upper", t:"SLP-база, верхняя челюсть", d:"Металлический базовый шаблон на четырёх фиксирующих пинах. По дуге расположены посадочные гнёзда для следующих этажей.", tags:["upper","guide"]},
+  {id:"drill-level", t:"Этаж для сверления", d:"Направляющий этаж с шестью металлическими втулками. Каждая втулка задаёт ось и глубину ложа под имплантат.", tags:["upper","guide"]},
+  {id:"base-front", t:"База спереди", d:"Два вестибулярных пина и цилиндрические опоры, на которые садится протез.", tags:["upper","guide"]},
+  {id:"base-cranial", t:"Фиксация пинами", d:"Пины вводятся вестибулярно и нёбно, поэтому база не смещается при смене этажей.", tags:["upper","guide"]},
+  {id:"base-upper-2", t:"Контроль посадки", d:"Модель со стороны верхнечелюстных пазух: видно, как пины проходят через кость под базой.", tags:["upper","guide"]},
+  {id:"plan-render", t:"Цифровой план стека", d:"Нижняя челюсть и все этажи шаблона в разборе: база, направляющие этажи и протез.", tags:["lower","digital"]},
+  {id:"lower-osteotomy", t:"Нижняя челюсть: ложа", d:"Модель после сверления по шаблону: четыре ложа во фронтальном отделе и одно в боковом.", tags:["lower"]},
+  {id:"lower-pins", t:"Нижняя челюсть спереди", d:"Три вестибулярных отверстия под фиксирующие пины базового шаблона.", tags:["lower"]},
+  {id:"upper-model", t:"Модель верхней челюсти", d:"Модель кости, напечатанная по КЛКТ пациента. На ней шаблоны проверяют до операции.", tags:["upper"]},
+  {id:"upper-pins", t:"Ложа пинов", d:"Вестибулярные отверстия под фиксирующие пины после снятия шаблона.", tags:["upper"]},
+  {id:"resin-base", t:"Базис на гипсовой модели", d:"Фотополимерный базис с посадочными окнами и двумя металлическими резьбовыми гильзами.", tags:["guide"]}
+];
+const FILTERS = [["all","Все"],["upper","Верхняя челюсть"],["lower","Нижняя челюсть"],["guide","Шаблоны"],["digital","3D-план"]];
+const pad = n => String(n).padStart(2,"0");
+
+const grid = document.getElementById("grid");
+WORKS.forEach((w,i)=>{
+  const b = document.createElement("button");
+  b.className="card"; b.type="button"; b.dataset.i=i; b.dataset.tags=w.tags.join(" ");
+  b.setAttribute("aria-label", w.t + ". Открыть фото");
+  b.innerHTML = `<img src="assets/${w.id}.jpg" alt="${w.t}" loading="lazy"><span class="cap"><span>${w.t}</span><small>${pad(i+1)}</small></span>`;
+  b.addEventListener("click",()=>openLb(i));
+  grid.appendChild(b);
+});
+
+const fWrap = document.getElementById("filters");
+let current = "all";
+try{ current = localStorage.getItem("fe-filter") || "all"; }catch(e){}
+function applyFilter(key){
+  current = key;
+  try{ localStorage.setItem("fe-filter",key);}catch(e){}
+  fWrap.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.k===key)));
+  grid.querySelectorAll(".card").forEach(c=>{ c.hidden = !(key==="all" || c.dataset.tags.split(" ").includes(key)); });
+}
+FILTERS.forEach(([k,label])=>{
+  const b=document.createElement("button"); b.type="button"; b.dataset.k=k; b.textContent=label;
+  b.addEventListener("click",()=>applyFilter(k)); fWrap.appendChild(b);
+});
+applyFilter(FILTERS.some(f=>f[0]===current)?current:"all");
+
+/* lightbox */
+const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg");
+let idx=0, visible=[], lastFocus=null;
+function openLb(i){
+  visible=[...grid.querySelectorAll(".card")].filter(c=>!c.hidden).map(c=>+c.dataset.i);
+  if(!visible.includes(i)) visible=WORKS.map((_,k)=>k);
+  idx=visible.indexOf(i); lastFocus=document.activeElement;
+  show(); lb.classList.add("open"); document.body.style.overflow="hidden";
+  document.getElementById("lbClose").focus();
+}
+function show(){
+  const w=WORKS[visible[idx]];
+  lbImg.src=`assets/${w.id}.jpg`; lbImg.alt=w.t;
+  document.getElementById("lbTitle").textContent=w.t;
+  document.getElementById("lbText").textContent=w.d;
+  document.getElementById("lbCount").textContent=`${pad(idx+1)} / ${pad(visible.length)}`;
+}
+function move(d){ idx=(idx+d+visible.length)%visible.length; show(); }
+function closeLb(){ lb.classList.remove("open"); document.body.style.overflow=""; if(lastFocus) lastFocus.focus(); }
+document.getElementById("lbPrev").onclick=()=>move(-1);
+document.getElementById("lbNext").onclick=()=>move(1);
+document.getElementById("lbClose").onclick=closeLb;
+lb.addEventListener("click",e=>{ if(e.target===lb||e.target.id==="lbStage") closeLb(); });
+document.addEventListener("keydown",e=>{
+  if(!lb.classList.contains("open")) return;
+  if(e.key==="Escape") closeLb();
+  if(e.key==="ArrowRight") move(1);
+  if(e.key==="ArrowLeft") move(-1);
+});
+let sx=null;
+document.getElementById("lbStage").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+document.getElementById("lbStage").addEventListener("touchend",e=>{
+  if(sx===null) return; const dx=e.changedTouches[0].clientX-sx;
+  if(Math.abs(dx)>45) move(dx<0?1:-1); sx=null;
+});
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>{
+  applyFilter("all"); openLb(WORKS.findIndex(w=>w.id===b.dataset.open));
+}));
+
+/* video */
+const vid=document.getElementById("vid"), vt=document.getElementById("vidToggle");
+if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){ vid.removeAttribute("autoplay"); vid.pause(); vt.textContent="Смотреть"; }
+vt.onclick=()=>{ if(vid.paused){ vid.play().catch(()=>{}); vt.textContent="Пауза"; } else { vid.pause(); vt.textContent="Смотреть"; } };
+vid.addEventListener("pause",()=>vt.textContent="Смотреть");
+vid.addEventListener("play",()=>vt.textContent="Пауза");
+
+/* calculator */
+const fmt = n => n.toLocaleString("ru-RU").replace(/ /g," ");
+let type=22000, floors=3, sleeves=6;
+const $=id=>document.getElementById(id);
+function calc(){
+  $("floors").textContent=floors; $("sleeves").textContent=sleeves;
+  const total = type*floors + 4000*sleeves + ($("xray").checked?13000:0) + ($("pmma").checked?130000:0);
+  $("total").textContent=fmt(total)+" ֏";
+}
+[["tAll",22000],["tSlp",52000]].forEach(([id,p])=>$(id).onclick=()=>{
+  type=p; $("tAll").setAttribute("aria-pressed",String(id==="tAll")); $("tSlp").setAttribute("aria-pressed",String(id==="tSlp")); calc();
+});
+$("fMinus").onclick=()=>{floors=Math.max(1,floors-1);calc()};
+$("fPlus").onclick=()=>{floors=Math.min(6,floors+1);calc()};
+$("sMinus").onclick=()=>{sleeves=Math.max(0,sleeves-1);calc()};
+$("sPlus").onclick=()=>{sleeves=Math.min(12,sleeves+1);calc()};
+$("xray").onchange=calc; $("pmma").onchange=calc;
+$("calc").addEventListener("submit",e=>e.preventDefault());
+calc();
+</script>
+</body>
+</html>
