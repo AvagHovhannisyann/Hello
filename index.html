@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ISD Dental School · Հավելվածներ</title>
+<meta name="theme-color" content="#f5f5f1">
+<meta name="description" content="Ստոմատոլոգի պորտֆոլիո և կլինիկական լուսանկարչության հավելվածներ — ISD Dental School">
+<link rel="icon" href="assets/icons/portfolio-192.png">
+<link rel="apple-touch-icon" href="assets/icons/portfolio-180.png">
+<link rel="stylesheet" href="assets/css/base.css">
+<style>
+/*
+VOICE: a clinic's front desk — calm, exact, two clear doors.
+IDEA: two instruments on a tray: the record book (porcelain) and the camera (black contrastor).
+PICTURE: the two app cards with live QR codes are the picture; scan from the screen or the projector.
+COLOUR/TYPE: porcelain ground, ink, coral flash; Noto Serif Armenian titles, Noto Sans Armenian body.
+LAYOUT: title band, two equal doors side by side, install help below; stacks under 760px.
+*/
+.wrap{max-width:1120px;margin:0 auto;padding:calc(22px + var(--safe-t)) max(16px,4vw) 48px}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.head b{font-weight:700}
+.head small{display:block;color:var(--ink-3);font-size:13px}
+.title{max-width:780px;margin-bottom:26px}
+.title h1{font-size:clamp(32px,5.6vw,52px)}
+.title p{font-size:17px;color:var(--ink-2);margin-top:12px;max-width:62ch}
+.doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.door{border-radius:20px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
+.door.dk{background:#0b0e0f;color:#eef1ef;border-color:#0b0e0f}
+.door.dk .muted{color:#8b9591}
+.door h2{font-size:26px;margin:14px 0 8px}
+.door ul{margin:10px 0 18px;padding-left:18px;font-size:15px;line-height:1.5}
+.door .ico{width:56px;height:56px;border-radius:14px}
+.qr{width:168px;aspect-ratio:1;background:#fff;border-radius:14px;padding:10px;display:grid;place-items:center;position:relative}
+.qr svg{width:100%;height:100%}
+.qr::before,.qr::after{content:"";position:absolute;width:22px;height:22px;border:3px solid var(--accent)}
+.qr::before{top:-6px;left:-6px;border-right:0;border-bottom:0}
+.qr::after{bottom:-6px;right:-6px;border-left:0;border-top:0}
+.door .row .btn{min-height:44px}
+.door.dk .btn{background:#151a1c;border-color:#323b3f;color:#eef1ef}
+.door.dk .btn.primary{background:#ff5c47;border-color:#ff5c47;color:#140806}
+.url{font-size:13px;word-break:break-all;margin-top:10px}
+@media(max-width:860px){.doors{grid-template-columns:1fr}}
+@media(max-width:520px){.door{grid-template-columns:1fr}.qr{width:150px}}
+.install{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}
+.install .card h3{margin-bottom:6px}
+.install ol{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--ink-2)}
+@media(max-width:760px){.install{grid-template-columns:1fr}}
+.foot{margin-top:28px;font-size:13px;color:var(--ink-3);max-width:80ch}
+/* projector mode */
+.proj{position:fixed;inset:0;z-index:90;background:#0b0e0f;color:#eef1ef;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4vw;padding:5vw;align-items:center}
+.proj .qr{width:min(34vw,62vh);padding:2vw}
+.proj h2{font-size:clamp(28px,3.6vw,60px);margin-top:3vh}
+.proj p{color:#8b9591;font-size:clamp(16px,1.6vw,26px);margin-top:1vh}
+.proj .x{position:absolute;top:20px;right:20px}
+.proj>div{display:flex;flex-direction:column;align-items:center;text-align:center}
+#printqr{display:none}
+@media print{
+  .wrap{display:none}
+  #printqr{display:grid!important;grid-template-rows:1fr 1fr;height:260mm;gap:10mm}
+  #printqr>div{display:grid;grid-template-columns:90mm 1fr;gap:10mm;align-items:center;border:1px solid #ccc;border-radius:6mm;padding:10mm}
+  #printqr h2{font:700 24pt var(--serif)}
+  #printqr p{font-size:12pt;color:#444;margin-top:4mm}
+  #printqr .qr{width:90mm;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head"><span id="mark"></span><span><b>ISD Dental School</b><small>Ստոմատոլոգի թվային գործիքներ</small></span></header>
+  <section class="title">
+    <h1>Այսօրվա կադրերը՝ վաղվա հնարավորություններ</h1>
+    <p>Երկու անվճար հավելված երիտասարդ ստոմատոլոգի համար։ Բացեք տեսախցիկով, ավելացրեք գլխավոր էկրանին և աշխատեք նաև առանց ինտերնետի։ Տվյալները մնում են ձեր սարքում։</p>
+  </section>
+  <section class="doors">
+    <article class="door">
+      <div>
+        <img class="ico" src="assets/icons/portfolio-192.png" alt="">
+        <h2>Պորտֆոլիո</h2>
+        <p class="muted">CV, դեպքերի գրանցամատյան և կլինիկական դեպքի քարտ CARE կառուցվածքով։</p>
+        <ul><li>Դեպք՝ բողոքից մինչև հետևում</li><li>Մեկ կոճակով PowerPoint</li><li>CV և գրանցամատյան՝ PDF</li></ul>
+        <div class="row"><a class="btn primary" href="portfolio/">Բացել</a></div>
+      </div>
+      <div><div class="qr" id="qr-portfolio"></div><div class="url muted" id="u-portfolio"></div></div>
+    </article>
+    <article class="door dk">
+      <div>
+        <img class="ico" src="assets/icons/photo-192.png" alt="">
+        <h2>Ֆոտոարձանագրություն</h2>
+        <p class="muted">Ստանդարտ շարք՝ 8 կամ 12 կադր։ Բեռնեք բոլորը միասին, հավելվածը կդասավորի։</p>
+        <ul><li>Ինքնաշխատ դասավորում ըստ հերթականության</li><li>Հայելային կադրերի շրջում</li><li>Մեկ կոլաժ՝ JPG կամ PDF</li></ul>
+        <div class="row"><a class="btn primary" href="photo/">Բացել</a></div>
+      </div>
+      <div><div class="qr" id="qr-photo"></div><div class="url muted" id="u-photo"></div></div>
+    </article>
+  </section>
+  <div class="row" style="margin-top:16px">
+    <button class="btn" id="proj">Ցույց տալ QR-ները էկրանին</button>
+    <button class="btn" id="prt">Տպել QR-ները (A4)</button>
+    <a class="btn ghost" href="assets/ISD_Case_Presentation_Template.pptx" download>PowerPoint ձևանմուշ</a>
+  </div>
+  <section class="install">
+    <div class="card"><h3>iPhone, iPad</h3><ol><li>Բացեք Safari-ով</li><li>«Կիսվել» կոճակ</li><li>«Ավելացնել հիմնական էկրանին»</li></ol></div>
+    <div class="card"><h3>Android</h3><ol><li>Բացեք Chrome-ով</li><li>Մենյու ⋮</li><li>«Տեղադրել հավելվածը»</li></ol></div>
+    <div class="card"><h3>Windows, Mac</h3><ol><li>Բացեք Chrome-ով կամ Edge-ով</li><li>Հասցեի տողում՝ տեղադրման պատկերակը</li><li>«Տեղադրել»</li></ol></div>
+  </section>
+  <p class="foot">Բուժառուների տվյալներն ու լուսանկարները պահվում են միայն ձեր սարքում։ ISD Dental School-ին ուղարկվում են միայն անանուն հարցման պատասխանները և ընդհանուր թվեր՝ ձեր համաձայնությամբ։</p>
+</div>
+<div id="printqr"></div>
+<script src="assets/js/core.js"></script>
+<script src="assets/vendor/qrcode.js"></script>
+<script>
+{
+  document.getElementById("mark").innerHTML = ISD.mark(false);
+  const base = location.href.replace(/[#?].*$/, "").replace(/index\.html$/, "");
+  const urls = { portfolio: base + "portfolio/", photo: base + "photo/" };
+  function svgQR(text) {
+    const q = qrcode(0, "M"); q.addData(text); q.make();
+    return q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  }
+  for (const k in urls) {
+    document.getElementById("qr-" + k).innerHTML = svgQR(urls[k]);
+    document.getElementById("u-" + k).textContent = urls[k].replace(/^https?:\/\//, "");
+  }
+  document.getElementById("proj").onclick = () => {
+    const d = document.createElement("div"); d.className = "proj";
+    d.innerHTML = '<button class="btn x" aria-label="Փակել">Փակել</button>' +
+      '<div><div class="qr">' + svgQR(urls.portfolio) + '</div><h2>Պորտֆոլիո</h2><p>CV · դեպքեր · PowerPoint</p></div>' +
+      '<div><div class="qr">' + svgQR(urls.photo) + '</div><h2>Ֆոտոարձանագրություն</h2><p>Ստանդարտ շարք · կոլաժ</p></div>';
+    document.body.appendChild(d);
+    d.querySelector(".x").onclick = () => d.remove();
+    addEventListener("keydown", function esc(e) { if (e.key === "Escape") { d.remove(); removeEventListener("keydown", esc); } });
+    if (d.requestFullscreen) d.requestFullscreen().catch(() => {});
+  };
+  document.getElementById("prt").onclick = () => {
+    document.getElementById("printqr").innerHTML =
+      '<div><div class="qr">' + svgQR(urls.portfolio) + '</div><div><h2>Պորտֆոլիո</h2><p>CV, դեպքերի գրանցամատյան, կլինիկական դեպքի ներկայացում PowerPoint-ով։</p><p>' + ISD.esc(urls.portfolio) + '</p><p>ISD Dental School</p></div></div>' +
+      '<div><div class="qr">' + svgQR(urls.photo) + '</div><div><h2>Ֆոտոարձանագրություն</h2><p>Ստանդարտ լուսանկարների շարք, ինքնաշխատ դասավորում և կոլաժ։</p><p>' + ISD.esc(urls.photo) + '</p><p>ISD Dental School</p></div></div>';
+    setTimeout(() => print(), 50);
+  };
+  ISD.registerSW && "serviceWorker" in navigator && location.protocol !== "file:" && navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
