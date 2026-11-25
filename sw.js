@@ -1,5 +1,5 @@
 /* ISD Dental School — offline cache for both apps. Bump VERSION on every deploy. */
-const VERSION = "isd-v1.0.1";
+const VERSION = "isd-v1.0.2";
 const FILES = [
   "./",
   "./portfolio/",
@@ -48,6 +48,7 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  if (/^\/(live|gs)(\/|$)/.test(new URL(req.url).pathname)) return;
   e.respondWith(
     caches.match(req, { ignoreSearch: true }).then(hit => {
       const net = fetch(req).then(res => {

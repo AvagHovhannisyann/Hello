@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Կենդանի արդյունքներ · ISD Dental School</title>
+<style>
+@font-face{font-family:"NSA";src:url(../assets/fonts/nsa-hy-400.woff2) format("woff2");font-weight:400;unicode-range:U+0530-058F,U+FB13-FB17}
+@font-face{font-family:"NSA";src:url(../assets/fonts/nsa-hy-700.woff2) format("woff2");font-weight:700;unicode-range:U+0530-058F,U+FB13-FB17}
+@font-face{font-family:"NSA";src:url(../assets/fonts/nsa-lat-400.woff2) format("woff2");font-weight:400;unicode-range:U+0000-024F,U+2000-206F}
+@font-face{font-family:"NSA";src:url(../assets/fonts/nsa-lat-700.woff2) format("woff2");font-weight:700;unicode-range:U+0000-024F,U+2000-206F}
+@font-face{font-family:"NSerif";src:url(../assets/fonts/nserif-hy-700.woff2) format("woff2");font-weight:700;unicode-range:U+0530-058F,U+FB13-FB17}
+@font-face{font-family:"NSerif";src:url(../assets/fonts/nserif-lat-700.woff2) format("woff2");font-weight:700;unicode-range:U+0000-024F,U+2000-206F}
+html,body{margin:0;height:100%;background:#0E1214;color:#EEF1EF;font-family:NSA,Arial,sans-serif}
+/* 16:9 stage, scaled to any screen — looks like the deck's slide 37 */
+.stage{position:fixed;inset:0;display:grid;place-items:center}
+.slide{width:1920px;height:1080px;box-sizing:border-box;padding:110px 128px;display:flex;flex-direction:column;transform-origin:center}
+.eyebrow{font-size:24px;font-weight:700;letter-spacing:1px;color:#FF5C47;margin:0 0 18px;display:flex;align-items:center;gap:14px}
+.dot{width:14px;height:14px;border-radius:50%;background:#FF5C47;animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.25}}
+h1{font-family:NSerif,Georgia,serif;font-size:72px;line-height:1.1;margin:0 0 56px}
+.row{display:flex;gap:28px;flex:1}
+.card{flex:1;background:#171D20;border:1px solid #263034;border-radius:6px;padding:48px 40px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.num{font-family:NSerif,Georgia,serif;font-size:180px;font-weight:700;line-height:1;margin:0;color:#EEF1EF;font-variant-numeric:tabular-nums}
+.num small{font-size:.45em;color:#FF5C47;margin-left:6px}
+.lbl{font-size:30px;font-weight:700;line-height:1.25;margin:24px 0 0}
+.sub{font-size:22px;color:#A9B4B1;margin:10px 0 0}
+.bar{position:absolute;left:0;bottom:0;height:10px;background:#FF5C47;width:0;transition:width 1.2s cubic-bezier(.2,.7,.2,1)}
+.foot{margin-top:40px;font-size:30px;color:#A9B4B1;display:flex;justify-content:space-between;align-items:baseline}
+.foot b{color:#EEF1EF;font-size:44px;font-family:NSerif,Georgia,serif}
+.err{color:#FF5C47}
+.hint{position:fixed;right:16px;bottom:12px;font-size:13px;color:#4c585c}
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide" id="s">
+  <p class="eyebrow"><span class="dot"></span>Կենդանի արդյունքներ</p>
+  <h1>Հայ ստոմատոլոգները՝ այս դահլիճում</h1>
+  <div class="row">
+    <div class="card"><div><p class="num" id="a">—</p><p class="lbl">լուսանկարում են գրեթե բոլոր դեպքերը</p><p class="sub" id="as"></p></div><div class="bar" id="ab"></div></div>
+    <div class="card"><div><p class="num" id="b">—</p><p class="lbl">պահում են դեպքերի գրանցամատյան</p><p class="sub" id="bs"></p></div><div class="bar" id="bb"></div></div>
+    <div class="card"><div><p class="num" id="c">—</p><p class="lbl">ունեն թարմ CV</p><p class="sub" id="cs"></p></div><div class="bar" id="cb"></div></div>
+  </div>
+  <div class="foot"><span>Պատասխանողներ՝ <b id="n">—</b></span><span id="st">Միանում է…</span></div>
+</div></div>
+<div class="hint">F11՝ ամբողջ էկրան · թարմացվում է ինքնաբերաբար</div>
+<script src="../assets/js/config.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const fit = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); $("s").style.transform = "scale(" + k + ")"; };
+  addEventListener("resize", fit); fit();
+
+  const shown = {};
+  function count(id, to) {
+    const el = $(id), from = shown[id] || 0; shown[id] = to;
+    const t0 = performance.now(), d = 900;
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / d), v = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      el.innerHTML = v + "<small>%</small>";
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  const pct = (c, n) => n ? Math.round(c / n * 100) : 0;
+
+  function render(d) {
+    const n = d.n || 0, q = d.q || {};
+    const A = (q.photoFreq || {})["Գրեթե բոլորը"] || 0;
+    const B = (q.logbook || {})["Այո, կանոնավոր"] || 0;
+    const C = (q.cv || {})["Այո"] || 0;
+    [["a", A], ["b", B], ["c", C]].forEach(([id, c]) => {
+      count(id, pct(c, n));
+      $(id + "b").style.width = pct(c, n) + "%";
+      $(id + "s").textContent = n ? c + " / " + n : "";
+    });
+    $("n").textContent = n;
+    const t = new Date(d.updated || Date.now());
+    $("st").className = ""; $("st").textContent = "Թարմացվել է՝ " + t.toLocaleTimeString("hy-AM", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+
+  const demo = /[?&]demo/.test(location.search);
+  async function load() {
+    if (demo) return render({ n: 47, q: { photoFreq: { "Գրեթե բոլորը": 9 }, logbook: { "Այո, կանոնավոր": 6 }, cv: { "Այո": 14 } } });
+    const url = (window.ISD_CONFIG || {}).endpoint;
+    if (!url) { $("st").className = "err"; $("st").textContent = "Հասցեն նշված չէ"; return; }
+    try {
+      const r = await fetch(url + "?summary=1&t=" + Date.now(), { cache: "no-store" });
+      const d = await r.json();
+      render(d);
+    } catch (e) {
+      $("st").className = "err"; $("st").textContent = "Կապ չկա աղյուսակի հետ · նորից կփորձենք";
+    }
+  }
+  load(); setInterval(load, 10000);
+})();
+</script>
+</body>
+</html>

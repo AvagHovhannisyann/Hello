@@ -9,7 +9,7 @@ ol{margin:0;padding:14px 24px 14px 44px;background:#163a3f;color:#d6e2df}
 pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre;overflow:auto;color:#e8f1ee}
 </style></head><body>
 <div class="top"><h1>ISD Dental School · Code.gs для Google Таблицы</h1><button id="b">Скопировать весь код</button></div>
-<ol><li><b>Обновление 4 (живая сводка, #ERROR! исправлен для любого языка таблицы):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
+<ol><li><b>Обновление 5 (живая сводка + страница результатов /live):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
 <pre id="c">/**
  * ISD Dental School — сбор анонимной анкеты и счётчиков из приложений «Պորտֆոլիո» и «Ֆոտոարձանագրություն».
  *
@@ -83,7 +83,22 @@ function doPost(e) {
   }
 }
 
-function doGet() { return ContentService.createTextOutput(&quot;ISD Dental School collector: OK&quot;); }
+/* GET …/exec?summary=1 → anonymous totals for the live results page (isd-dental.vercel.app/live).
+   Only counts per answer — never single rows. */
+function doGet(e) {
+  if (!(e &amp;&amp; e.parameter &amp;&amp; e.parameter.summary)) return ContentService.createTextOutput(&quot;ISD Dental School collector: OK&quot;);
+  const sv = book().getSheetByName(SH_SURVEY);
+  const n = sv ? Math.max(0, sv.getLastRow() - 1) : 0;
+  const data = n ? sv.getRange(2, 5, n, Q.length).getDisplayValues() : [];
+  const rows = data.filter(r =&gt; r.some(v =&gt; String(v).trim() !== &quot;&quot;));
+  const out = { n: rows.length, updated: new Date().toISOString(), q: {} };
+  Q.forEach((q, qi) =&gt; {
+    const c = {};
+    q[2].forEach(opt =&gt; { c[opt] = rows.filter(r =&gt; String(r[qi]).split(&quot;; &quot;).indexOf(opt) &gt;= 0).length; });
+    out.q[q[0]] = c;
+  });
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
 
 /* «Ամփոփում»: live summary built from formulas, so it follows the «Հարցում» sheet by itself —
    new answers, deleted rows, cleared cells. Run refreshSummary (or setup) once after pasting this code. */

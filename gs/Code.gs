@@ -71,7 +71,22 @@ function doPost(e) {
   }
 }
 
-function doGet() { return ContentService.createTextOutput("ISD Dental School collector: OK"); }
+/* GET …/exec?summary=1 → anonymous totals for the live results page (isd-dental.vercel.app/live).
+   Only counts per answer — never single rows. */
+function doGet(e) {
+  if (!(e && e.parameter && e.parameter.summary)) return ContentService.createTextOutput("ISD Dental School collector: OK");
+  const sv = book().getSheetByName(SH_SURVEY);
+  const n = sv ? Math.max(0, sv.getLastRow() - 1) : 0;
+  const data = n ? sv.getRange(2, 5, n, Q.length).getDisplayValues() : [];
+  const rows = data.filter(r => r.some(v => String(v).trim() !== ""));
+  const out = { n: rows.length, updated: new Date().toISOString(), q: {} };
+  Q.forEach((q, qi) => {
+    const c = {};
+    q[2].forEach(opt => { c[opt] = rows.filter(r => String(r[qi]).split("; ").indexOf(opt) >= 0).length; });
+    out.q[q[0]] = c;
+  });
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
 
 /* «Ամփոփում»: live summary built from formulas, so it follows the «Հարցում» sheet by itself —
    new answers, deleted rows, cleared cells. Run refreshSummary (or setup) once after pasting this code. */
