@@ -9,7 +9,7 @@ ol{margin:0;padding:14px 24px 14px 44px;background:#163a3f;color:#d6e2df}
 pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre;overflow:auto;color:#e8f1ee}
 </style></head><body>
 <div class="top"><h1>ISD Dental School · Code.gs для Google Таблицы</h1><button id="b">Скопировать весь код</button></div>
-<ol><li><b>Обновление 2 (живая сводка):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
+<ol><li><b>Обновление 3 (живая сводка, исправлен #ERROR!):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
 <pre id="c">/**
  * ISD Dental School — сбор анонимной анкеты и счётчиков из приложений «Պորտֆոլիո» и «Ֆոտոարձանագրություն».
  *
@@ -109,7 +109,13 @@ function refreshSummary() {
     });
   });
   out.clear();
-  out.getRange(1, 1, rows.length, 4).setValues(rows);
+  // Text goes in with setValues; formulas only via setFormula(s), which always read
+  // English syntax (commas) whatever the Sheet&#x27;s locale — setValues would parse them
+  // in the local syntax (e.g. &quot;;&quot; in a Russian-locale Sheet) and show #ERROR!.
+  const isF = v =&gt; typeof v === &quot;string&quot; &amp;&amp; v.charAt(0) === &quot;=&quot;;
+  out.getRange(1, 1, rows.length, 4).setValues(rows.map(r =&gt; r.map(v =&gt; isF(v) ? &quot;&quot; : v)));
+  out.getRange(2, 2).setFormula(rows[1][1]);
+  out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r =&gt; [r[2], r[3]]));
   out.getRange(1, 1).setFontSize(18).setFontWeight(&quot;bold&quot;);
   out.getRange(2, 1, 1, 2).setFontWeight(&quot;bold&quot;);
   out.getRange(4, 1, 1, 4).setFontWeight(&quot;bold&quot;);

@@ -97,7 +97,13 @@ function refreshSummary() {
     });
   });
   out.clear();
-  out.getRange(1, 1, rows.length, 4).setValues(rows);
+  // Text goes in with setValues; formulas only via setFormula(s), which always read
+  // English syntax (commas) whatever the Sheet's locale — setValues would parse them
+  // in the local syntax (e.g. ";" in a Russian-locale Sheet) and show #ERROR!.
+  const isF = v => typeof v === "string" && v.charAt(0) === "=";
+  out.getRange(1, 1, rows.length, 4).setValues(rows.map(r => r.map(v => isF(v) ? "" : v)));
+  out.getRange(2, 2).setFormula(rows[1][1]);
+  out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r => [r[2], r[3]]));
   out.getRange(1, 1).setFontSize(18).setFontWeight("bold");
   out.getRange(2, 1, 1, 2).setFontWeight("bold");
   out.getRange(4, 1, 1, 4).setFontWeight("bold");
