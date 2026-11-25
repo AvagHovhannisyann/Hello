@@ -97,13 +97,18 @@ function refreshSummary() {
     });
   });
   out.clear();
-  // Text goes in with setValues; formulas only via setFormula(s), which always read
-  // English syntax (commas) whatever the Sheet's locale — setValues would parse them
-  // in the local syntax (e.g. ";" in a Russian-locale Sheet) and show #ERROR!.
   const isF = v => typeof v === "string" && v.charAt(0) === "=";
   out.getRange(1, 1, rows.length, 4).setValues(rows.map(r => r.map(v => isF(v) ? "" : v)));
-  out.getRange(2, 2).setFormula(rows[1][1]);
-  out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r => [r[2], r[3]]));
+  // Formula argument separator depends on the Sheet's language: "," (English) or ";" (Russian, Armenian…).
+  // Write with ",", check the result, and switch to ";" if the Sheet could not read it.
+  const put = sep => {
+    const fx = f => sep === "," ? f : f.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g, ";");
+    out.getRange(2, 2).setFormula(rows[1][1]);
+    out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r => [fx(r[2]), fx(r[3])]));
+    SpreadsheetApp.flush();
+    return !/^#/.test(String(out.getRange(5, 3).getDisplayValue())) && !/^#/.test(String(out.getRange(5, 4).getDisplayValue()));
+  };
+  if (!put(",")) put(";");
   out.getRange(1, 1).setFontSize(18).setFontWeight("bold");
   out.getRange(2, 1, 1, 2).setFontWeight("bold");
   out.getRange(4, 1, 1, 4).setFontWeight("bold");
