@@ -56,7 +56,6 @@ function doPost(e) {
     if (d.type === "survey") {
       const a = d.answers || {};
       ss.getSheetByName(SH_SURVEY).appendRow([new Date(), clip(d.installId), clip(d.app), clip(d.version)].concat(Q.map(q => clip(a[q[0]]))));
-      refreshSummary();
     } else if (d.type === "stats") {
       const sh = ss.getSheetByName(SH_STATS);
       const row = [new Date(), clip(d.installId), clip(d.app), clip(d.version), num(d.cases), num(d.casesReady), num(d.casesWithPhotos), num(d.series), num(d.photos), num(d.seriesComplete), clip(d.disciplines), d.cvFilled === true ? "այո" : (d.cvFilled === false ? "ոչ" : "")];
@@ -74,22 +73,33 @@ function doPost(e) {
 
 function doGet() { return ContentService.createTextOutput("ISD Dental School collector: OK"); }
 
-/* «Ամփոփում»: live summary to show on the projector at the end of the lecture. */
+/* «Ամփոփում»: live summary built from formulas, so it follows the «Հարցում» sheet by itself —
+   new answers, deleted rows, cleared cells. Run refreshSummary (or setup) once after pasting this code. */
 function refreshSummary() {
   const ss = book();
-  const sv = ss.getSheetByName(SH_SURVEY), out = ss.getSheetByName(SH_SUMMARY);
-  const n = Math.max(0, sv.getLastRow() - 1);
-  const data = n ? sv.getRange(2, 5, n, Q.length).getValues() : [];
-  const rows = [["Հայ ստոմատոլոգները թվերով", "", "", ""], ["Պատասխանողներ", n, "", "Թարմացվել է՝ " + Utilities.formatDate(new Date(), "Asia/Yerevan", "dd.MM.yyyy HH:mm")], ["", "", "", ""], ["Հարց", "Պատասխան", "Քանակ", "%"]];
+  const out = ss.getSheetByName(SH_SUMMARY) || ss.insertSheet(SH_SUMMARY, 0);
+  const src = "'" + SH_SURVEY + "'!";
+  const col = i => { let n = i, s = ""; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const lit = t => '"' + String(t).replace(/"/g, '""') + '"';
+  const rows = [
+    ["Հայ ստոմատոլոգները թվերով", "", "", ""],
+    ["Պատասխանողներ", "=COUNTA(" + src + "A2:A)", "", ""],
+    ["", "", "", ""],
+    ["Հարց", "Պատասխան", "Քանակ", "%"]
+  ];
   Q.forEach((q, qi) => {
+    const R = src + col(5 + qi) + "2:" + col(5 + qi);
     q[2].forEach((opt, oi) => {
-      const c = data.filter(r => String(r[qi]).split("; ").indexOf(opt) >= 0).length;
-      rows.push([oi === 0 ? q[1] : "", opt, c, n ? Math.round(c / n * 100) / 100 : 0]);
+      const r = rows.length + 1;
+      // exact match of one answer, also inside multi-choice cells joined with "; "
+      const f = "=COUNTIF(" + R + "," + lit(opt) + ")+COUNTIF(" + R + "," + lit(opt + "; *") + ")+COUNTIF(" + R + "," + lit("*; " + opt) + ")+COUNTIF(" + R + "," + lit("*; " + opt + "; *") + ")";
+      rows.push([oi === 0 ? q[1] : "", opt, f, "=IF($B$2=0,0,C" + r + "/$B$2)"]);
     });
   });
-  out.clearContents();
+  out.clear();
   out.getRange(1, 1, rows.length, 4).setValues(rows);
   out.getRange(1, 1).setFontSize(18).setFontWeight("bold");
+  out.getRange(2, 1, 1, 2).setFontWeight("bold");
   out.getRange(4, 1, 1, 4).setFontWeight("bold");
   out.getRange(5, 4, rows.length - 4, 1).setNumberFormat("0%");
   out.setColumnWidth(1, 240); out.setColumnWidth(2, 300);
