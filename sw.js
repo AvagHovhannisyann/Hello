@@ -1,5 +1,5 @@
 /* ISD Dental School — offline cache for both apps. Bump VERSION on every deploy. */
-const VERSION = "isd-v1.1.0";
+const VERSION = "isd-v1.1.1";
 const FILES = [
   "./",
   "./portfolio/",
@@ -31,6 +31,8 @@ const FILES = [
   "./assets/vendor/jspdf.umd.min.js",
   "./assets/brand/isd-logo.png",
   "./assets/brand/isd-mark.png",
+  "./assets/brand/partner-whitecastle.png",
+  "./assets/brand/partner-dta.png",
   "./assets/vendor/pptxgen.bundle.js",
   "./assets/vendor/qrcode.js",
   "./index.html",

@@ -275,7 +275,7 @@
         const n = filledCount(s), t = proto(s).slots.length;
         return '<button class="ser" data-id="' + esc(s.id) + '"><img class="pv" alt=""><span class="meta"><b>' + esc(s.code || "Առանց կոդի") + '</b><span class="muted small">' + esc(P.stageName(s.stage)) + " · " + esc(ISD.fmtShort(s.date)) + " · " + n + "/" + t + '</span><span class="progress"><i style="width:' + Math.round(n / t * 100) + '%"></i></span></span></button>';
       }).join("") + "</div>" : '<div class="empty card">Դեռ շարք չկա։ Սկսեք «Նոր շարք» կոճակով։</div>') +
-      '<p class="muted tiny" style="margin-top:28px;max-width:70ch">Լուսանկարները պահվում են միայն այս սարքում և ոչ մի տեղ չեն ուղարկվում։ Կոլաժը պահեք կամ կցեք դեպքին «Պորտֆոլիո» հավելվածում։</p>';
+      '<p class="muted tiny" style="margin-top:28px;max-width:70ch">Լուսանկարները պահվում են միայն այս սարքում և ոչ մի տեղ չեն ուղարկվում։ Կոլաժը պահեք կամ կցեք դեպքին «Պորտֆոլիո» հավելվածում։</p>' + ISD.partners(false);
     $("#new").onclick = newSeries;
     $("#guide").onclick = () => guide("basic8");
     $$(".ser").forEach(b => b.onclick = () => location.hash = "s-" + b.dataset.id);

@@ -106,12 +106,14 @@ LAYOUT: title band, two equal doors side by side, install help below; stacks und
   </section>
   <p class="foot">Բուժառուների տվյալներն ու լուսանկարները պահվում են միայն ձեր սարքում։ ISD Dental School-ին ուղարկվում են միայն անանուն հարցման պատասխանները և ընդհանուր թվեր՝ ձեր համաձայնությամբ։</p>
 </div>
+<div id="partners-slot" class="wrap" style="padding-top:0"></div>
 <div id="printqr"></div>
 <script src="assets/js/core.js"></script>
 <script src="assets/vendor/qrcode.js"></script>
 <script>
 {
   document.getElementById("mark").innerHTML = ISD.mark(false);
+  document.getElementById("partners-slot").innerHTML = ISD.partners(false);
   const base = location.href.replace(/[#?].*$/, "").replace(/index\.html$/, "");
   const urls = { portfolio: base + "portfolio/", photo: base + "photo/" };
   function svgQR(text) {

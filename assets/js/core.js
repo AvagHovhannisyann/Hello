@@ -177,6 +177,13 @@
     return { data: c.toDataURL("image/jpeg", 0.88), w, h };
   }
 
+  /* Partners — shown quietly at the bottom of the apps and the start page. */
+  const PARTNERS = [
+    { name: "«Սպիտակ Ամրոց»", sub: "Ստոմատոլոգիական կլինիկա · Երևան, 2010-ից", logo: "/assets/brand/partner-whitecastle.png", url: "https://whitecastle.am" },
+    { name: "Dental Tourism Armenia", sub: "Ստոմատոլոգիական զբոսաշրջության զարգացման հիմնադրամ", logo: "/assets/brand/partner-dta.png", url: "https://www.dentaltourismarmenia.am" }
+  ];
+  const partners = full => '<section class="partners' + (full ? " full" : "") + '"><p class="plabel">Գործընկերներ</p><div class="plist">' +
+    PARTNERS.map(x => '<a class="pt" href="' + x.url + '" target="_blank" rel="noopener"><img src="' + x.logo + '" alt="" width="40" height="40"><span><b>' + esc(x.name) + "</b>" + (full ? "<small>" + esc(x.sub) + "</small>" : "") + "</span></a>").join("") + "</div></section>";
   /* ISD logo as an image for canvas drawing (collage, PDFs); resolves null if offline and not cached. */
   let logoP = null;
   function logo() {
@@ -239,5 +246,5 @@
     }
   }
 
-  root.ISD = { db, persist, uid, esc, $, $$, today, fmtDate, fmtShort, debounce, toast, sheet, confirmBox, saveFile, blobToDataURL, dataURLToBlob, safeName, decode, canvasToBlob, importPhoto, bitmap, drawPhoto, correctedDataURL, installId, icon, mark, logo, drawLogoChip, registerSW, isTouch };
+  root.ISD = { db, persist, uid, esc, $, $$, today, fmtDate, fmtShort, debounce, toast, sheet, confirmBox, saveFile, blobToDataURL, dataURLToBlob, safeName, decode, canvasToBlob, importPhoto, bitmap, drawPhoto, correctedDataURL, installId, icon, mark, logo, drawLogoChip, partners, registerSW, isTouch };
 })(window);
