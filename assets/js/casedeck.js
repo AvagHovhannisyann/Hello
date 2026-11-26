@@ -81,7 +81,7 @@
         { text: G(d.role, "Մասնագիտացում, կլինիկա"), options: { fontSize: 13, color: C.gray, breakLine: true } },
         { text: G(d.event, "Միջոցառում · ամսաթիվ"), options: { fontSize: 13, color: C.gray } }
       ], { x: M, y: 5.35, w: 6.2, h: 1.2 });
-      photo(s, d.hero, 7.35, 0.6, 5.4, 6.1, "Վերջնական արդյունքի լավագույն կադրը", { hint: "Ժպիտ մոտիկից կամ ճակատային կադր", caption: false });
+      photo(s, d.hero, 7.35, 0.6, 5.4, 6.1, "Վերջնական արդյունքի լավագույն կադրը", { hint: "Ժպիտ մոտիկից կամ կադր՝ առջևից", caption: false });
     }
 
     /* ---------- template guide ---------- */
@@ -143,7 +143,7 @@
       const s = slide(true, "Կլինիկական հետազոտություն", "Ներբերանային հետազոտություն", "1–2 րոպե։ Պարոդոնտալ վիճակ (պարոդոնտալ քարտեզը՝ առանձին սլայդով կամ հավելվածում), ատամների վիճակ, կծվածք, ֆունկցիոնալ գտածոներ։");
       const top = 1.6, cw = 3.55, ch = 2.37, cg = 0.18, x0 = (W - (3 * cw + 2 * cg)) / 2;
       photo(s, io.latR, x0, top, cw, ch, "Աջ կողմնային");
-      photo(s, io.frontal, x0 + cw + cg, top, cw, ch, "Ճակատային՝ կծվածքում");
+      photo(s, io.frontal, x0 + cw + cg, top, cw, ch, "Առջևից՝ կծվածքում");
       photo(s, io.latL, x0 + 2 * (cw + cg), top, cw, ch, "Ձախ կողմնային");
       photo(s, io.occU, x0, top + ch + 0.42, cw, ch, "Վերին ծնոտ՝ օկլյուզիոն");
       text(s, G(d.findingsIntra, "Ներբերանային գտածոները՝ 3–4 կետ"), { x: x0 + cw + cg + 0.1, y: top + ch + 0.42, w: cw - 0.2, h: ch, fontSize: 13, guide: !has(d.findingsIntra) });
@@ -214,7 +214,7 @@
 
     /* ---------- 11. before / after ---------- */
     if (TPL || d.before || d.after) {
-      const s = slide(true, "Արդյունք", d.resultTitle || "Նախքան և հետո", "30 վայրկյան։ Նույն տեսքը, նույն խոշորացումը և լույսը։ Լավագույնը՝ ճակատային կադրը կամ ժպիտը։");
+      const s = slide(true, "Արդյունք", d.resultTitle || "Նախքան և հետո", "30 վայրկյան։ Նույն տեսքը, նույն խոշորացումը և լույսը։ Լավագույնը՝ կադրը առջևից կամ ժպիտը։");
       const bw = (W - 2 * M - 0.3) / 2;
       photo(s, d.before, M, 1.6, bw, 4.75, null, { hint: "Նախքան բուժումը" });
       photo(s, d.after, M + bw + 0.3, 1.6, bw, 4.75, null, { hint: "Բուժումից հետո" });
