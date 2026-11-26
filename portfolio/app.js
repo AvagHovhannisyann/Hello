@@ -348,8 +348,10 @@
     PR = Object.assign({ name: "", nameLatin: "", title: "", clinic: "", city: "", email: "", phone: "", about: "", includeLog: true }, (await db.meta("profile", {})) || {});
     CVS.forEach(s => { PR[s[0]] = PR[s[0]] || []; });
     const pf = (k, l, o) => '<label class="f"><span>' + l + "</span>" + (o && o.area ? '<textarea data-p="' + k + '" rows="3">' + esc(PR[k]) + "</textarea>" : '<input type="' + ((o && o.type) || "text") + '" data-p="' + k + '" value="' + esc(PR[k]) + '">') + "</label>";
-    app.innerHTML = '<section class="lead"><div><h1>CV</h1><p>Լրացրեք մեկ անգամ, թարմացրեք 6 ամիսը մեկ։ «Տպել / PDF» կոճակը ստեղծում է A4 փաստաթուղթ։ Կլինիկական փորձի թվերը վերցվում են գրանցամատյանից։</p></div><div class="row" style="justify-content:flex-end"><button class="btn primary" id="pcv">' + icon("print") + "Տպել / PDF</button></div></section>" +
-      '<div class="card cvsec"><h3 style="margin-bottom:12px">Անձնական տվյալներ</h3><div class="grid2">' + pf("name", "Անուն Ազգանուն") + pf("nameLatin", "Անունը լատինատառ (անձնագրի պես)") + pf("title", "Մասնագիտացում") + pf("clinic", "Կլինիկա") + pf("city", "Քաղաք") + pf("email", "Էլ. հասցե", { type: "email" }) + pf("phone", "Հեռախոս", { type: "tel" }) + "</div>" + pf("about", "Մասնագիտական ամփոփում (2–3 նախադասություն)", { area: true }) +
+    app.innerHTML = '<section class="lead"><div><h1>CV</h1><p>Լրացրեք մեկ անգամ, թարմացրեք 6 ամիսը մեկ։ «Ներբեռնել PDF»՝ պատրաստի A4 ֆայլ ձեր հեռախոսում կամ համակարգչում․ ուղարկեք, կցեք դիմումին։ Կլինիկական փորձի թվերը վերցվում են գրանցամատյանից։</p></div><div class="row" style="justify-content:flex-end;gap:8px"><button class="btn" id="pcv">' + icon("print") + 'Տպել</button><button class="btn primary" id="dcv">' + icon("download") + "Ներբեռնել PDF</button></div></section>" +
+      '<div class="card cvsec"><h3 style="margin-bottom:12px">Անձնական տվյալներ</h3>' +
+      '<div class="cvphoto"><div class="ava" id="ava">' + (PR.photo ? '<img src="' + PR.photo + '" alt="Լուսանկար">' : icon("cv")) + '</div><div><p class="small" style="margin:0 0 8px">Լուսանկար CV-ի համար՝ չեզոք ֆոն, ուսերից վեր</p><div class="row" style="gap:8px"><label class="btn small" for="pfile">' + icon("camera") + (PR.photo ? "Փոխել" : "Վերբեռնել լուսանկար") + '</label>' + (PR.photo ? '<button class="btn small" id="prm">' + icon("trash") + "Հեռացնել</button>" : "") + '</div><input type="file" id="pfile" accept="image/*" hidden></div></div>' +
+      '<div class="grid2">' + pf("name", "Անուն Ազգանուն") + pf("nameLatin", "Անունը լատինատառ (անձնագրի պես)") + pf("title", "Մասնագիտացում") + pf("clinic", "Կլինիկա") + pf("city", "Քաղաք") + pf("email", "Էլ. հասցե", { type: "email" }) + pf("phone", "Հեռախոս", { type: "tel" }) + "</div>" + pf("about", "Մասնագիտական ամփոփում (2–3 նախադասություն)", { area: true }) +
       '<label class="switch"><input type="checkbox" id="incl"' + (PR.includeLog ? " checked" : "") + "><span>CV-ում ներառել «Կլինիկական փորձ թվերով» բաժինը գրանցամատյանից</span></label></div>" +
       CVS.map(s => '<div class="card cvsec"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h3>' + s[1] + '</h3><button class="btn small" data-add="' + s[0] + '">' + icon("plus") + "Ավելացնել</button></div><div data-list=\"" + s[0] + '"></div></div>').join("");
     $$("[data-p]").forEach(el => el.oninput = () => { PR[el.dataset.p] = el.value; saveProfile(); });
@@ -357,6 +359,18 @@
     CVS.forEach(s => drawCvList(s));
     $$("[data-add]").forEach(b => b.onclick = () => { const s = CVS.find(x => x[0] === b.dataset.add); PR[s[0]].push({ what: "", where: "", when: "" }); saveProfile(); drawCvList(s, true); });
     $("#pcv").onclick = printCV;
+    $("#dcv").onclick = downloadCV;
+    $("#pfile").onchange = async e => {
+      const f = e.target.files && e.target.files[0]; if (!f) return;
+      try {
+        const img = await ISD.decode(f);
+        const c = document.createElement("canvas"); c.width = 600; c.height = 750;   // 4:5 portrait
+        ISD.drawPhoto(c.getContext("2d"), img, 0, 0, 600, 750, {}, "cover", "#ffffff");
+        PR.photo = c.toDataURL("image/jpeg", 0.86);
+        await db.setMeta("profile", PR); cvView(); toast("Լուսանկարը պահված է");
+      } catch (err) { toast("Չհաջողվեց բացել նկարը"); }
+    };
+    if ($("#prm")) $("#prm").onclick = async () => { delete PR.photo; await db.setMeta("profile", PR); cvView(); };
   }
   function drawCvList(s, focusLast) {
     const host = $('[data-list="' + s[0] + '"]');
@@ -370,11 +384,116 @@
     const all = (await db.all("cases")).map(normalize);
     const m = {}; all.filter(c => c.role === "operator").forEach(c => { if (c.discipline) m[c.discipline] = (m[c.discipline] || 0) + 1; });
     const log = Object.entries(m).sort((a, b) => b[1] - a[1]);
-    $("#print").innerHTML = "<h1>" + esc(PR.name || "Անուն Ազգանուն") + "</h1><div class='sub'>" + esc([PR.nameLatin, PR.title, PR.clinic, PR.city].filter(Boolean).join(" · ")) + "<br>" + esc([PR.email, PR.phone].filter(Boolean).join(" · ")) + "</div>" +
+    $("#print").innerHTML = (PR.photo ? "<img class='cvph' src='" + PR.photo + "' alt=''>" : "") + "<h1>" + esc(PR.name || "Անուն Ազգանուն") + "</h1><div class='sub'>" + esc([PR.nameLatin, PR.title, PR.clinic, PR.city].filter(Boolean).join(" · ")) + "<br>" + esc([PR.email, PR.phone].filter(Boolean).join(" · ")) + "</div>" +
       (PR.about ? "<p style='font-size:11pt'>" + esc(PR.about) + "</p>" : "") +
       CVS.map(s => PR[s[0]].filter(x => x.what).length ? "<h2>" + s[1] + "</h2>" + PR[s[0]].filter(x => x.what).map(x => "<div class='it'><span class='w'>" + esc(x.when) + "</span><span><b>" + esc(x.what) + "</b>" + (x.where ? ", " + esc(x.where) : "") + "</span></div>").join("") : "").join("") +
       (PR.includeLog && log.length ? "<h2>Կլինիկական փորձ թվերով</h2>" + log.map(x => "<div class='it'><span class='w'>" + x[1] + " դեպք</span><span>" + esc(x[0]) + "</span></div>").join("") + "<p style='font-size:9pt;color:#666'>Ըստ անձնական կլինիկական գրանցամատյանի, " + esc(ISD.fmtDate(ISD.today())) + ".</p>" : "");
     printNow();
+  }
+
+
+  /* ---------- CV → PDF file ---------- */
+  function loadScript(src) {
+    return new Promise((res, rej) => { const t = document.createElement("script"); t.src = src; t.onload = res; t.onerror = rej; document.head.appendChild(t); });
+  }
+  async function cvData() {
+    await db.setMeta("profile", PR);
+    const all = (await db.all("cases")).map(normalize);
+    const m = {}; all.filter(c => c.role === "operator").forEach(c => { if (c.discipline) m[c.discipline] = (m[c.discipline] || 0) + 1; });
+    return Object.entries(m).sort((a, b) => b[1] - a[1]);
+  }
+  async function downloadCV() {
+    const btn = $("#dcv"); btn.disabled = true; const label = btn.innerHTML; btn.innerHTML = icon("download") + "Պատրաստվում է…";
+    try {
+      const log = await cvData();
+      if (!window.jspdf) await loadScript("../assets/vendor/jspdf.umd.min.js");
+      await Promise.all(["400 24px NSA", "700 24px NSA", "700 48px NSerif"].map(f => document.fonts.load(f, "Աա Aa 1")));
+      const pages = await renderCvPages(log);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true });
+      pages.forEach((c, i) => { if (i) pdf.addPage(); pdf.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297, undefined, "FAST"); });
+      pdf.setProperties({ title: "CV — " + (PR.nameLatin || PR.name || ""), author: PR.nameLatin || PR.name || "", creator: "ISD Dental School · Պորտֆոլիո" });
+      const name = "CV_" + ISD.safeName(PR.nameLatin || PR.name || "dentist") + ".pdf";
+      await ISD.saveFile(pdf.output("blob"), name);
+      toast("CV-ն պատրաստ է");
+    } catch (e) { console.error(e); toast("Չհաջողվեց ստեղծել PDF․ փորձեք «Տպել»"); }
+    finally { btn.disabled = false; btn.innerHTML = label; }
+  }
+  // A4 at 150 dpi: 1240 × 1754 px; 1 mm ≈ 5.906 px; 1 pt ≈ 2.083 px
+  async function renderCvPages(log) {
+    const W = 1240, H = 1754, MM = W / 210, PT = 150 / 72, M = Math.round(16 * MM), CW = W - 2 * M;
+    const SANS = "NSA, Arial, sans-serif", SERIF = "NSerif, Georgia, serif", RED = "#b8321f";
+    const pages = []; let c, x, y;
+    const page = () => { c = document.createElement("canvas"); c.width = W; c.height = H; x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, W, H); x.textBaseline = "alphabetic"; pages.push(c); y = M; };
+    const font = (w, pt, fam) => { x.font = w + " " + Math.round(pt * PT) + "px " + (fam || SANS); };
+    const need = h => { if (y + h > H - M - 30) page(); };
+    // word-wrap a list of runs [{t, b}] into lines of runs
+    function wrap(runs, maxW, pt) {
+      const lines = [[]]; let lw = 0;
+      runs.forEach(r => {
+        String(r.t).split(/(\s+)/).filter(Boolean).forEach(tok => {
+          font(r.b ? 700 : 400, pt); let w = x.measureText(tok).width;
+          if (/^\s+$/.test(tok)) { if (lw > 0) { lines[lines.length - 1].push({ t: " ", b: r.b }); lw += x.measureText(" ").width; } return; }
+          while (w > maxW) {                       // very long token: cut it
+            let k = tok.length; while (k > 1 && x.measureText(tok.slice(0, k)).width > maxW - lw) k--;
+            if (lw > 0 && k < 2) { lines.push([]); lw = 0; continue; }
+            lines[lines.length - 1].push({ t: tok.slice(0, k), b: r.b }); lines.push([]); lw = 0; tok = tok.slice(k); w = x.measureText(tok).width;
+          }
+          if (lw + w > maxW && lw > 0) { const L = lines[lines.length - 1]; if (L.length && L[L.length - 1].t === " ") L.pop(); lines.push([]); lw = 0; }
+          lines[lines.length - 1].push({ t: tok, b: r.b }); lw += w;
+        });
+      });
+      return lines.filter(l => l.length);
+    }
+    function drawLines(lines, x0, pt, color, lh) {
+      const step = Math.round(pt * PT * (lh || 1.4));
+      lines.forEach(L => { need(step); let xx = x0; y += Math.round(pt * PT); L.forEach(r => { font(r.b ? 700 : 400, pt); x.fillStyle = color; x.fillText(r.t, xx, y); xx += x.measureText(r.t).width; }); y += step - Math.round(pt * PT); });
+    }
+    page();
+    // header: photo right, name and contacts left
+    const PW = Math.round(32 * MM), PH = Math.round(40 * MM), hasPh = !!PR.photo;
+    const textW = hasPh ? CW - PW - Math.round(8 * MM) : CW, top = y;
+    if (hasPh) {
+      const img = await ISD.decode(await ISD.dataURLToBlob(PR.photo));
+      x.save(); const r = 14, px = W - M - PW, py = top;
+      x.beginPath(); x.moveTo(px + r, py); x.arcTo(px + PW, py, px + PW, py + PH, r); x.arcTo(px + PW, py + PH, px, py + PH, r); x.arcTo(px, py + PH, px, py, r); x.arcTo(px, py, px + PW, py, r); x.closePath(); x.clip();
+      ISD.drawPhoto(x, img, px, py, PW, PH, {}, "cover", "#eee"); x.restore();
+    }
+    font(700, 26, SERIF); x.fillStyle = "#111";
+    wrap([{ t: PR.name || "Անուն Ազգանուն", b: true }], textW, 26).forEach(L => { y += Math.round(26 * PT); x.font = "700 " + Math.round(26 * PT) + "px " + SERIF; x.fillText(L.map(r => r.t).join(""), M, y); y += Math.round(26 * PT * 0.25); });
+    y += 10;
+    const sub = [PR.nameLatin, PR.title, PR.clinic, PR.city].filter(Boolean).join(" · ");
+    if (sub) drawLines(wrap([{ t: sub }], textW, 12), M, 12, "#444", 1.35);
+    const con = [PR.email, PR.phone].filter(Boolean).join(" · ");
+    if (con) drawLines(wrap([{ t: con }], textW, 12), M, 12, "#444", 1.35);
+    y = Math.max(y, hasPh ? top + PH : y) + Math.round(7 * MM);
+    if (PR.about) { drawLines(wrap([{ t: PR.about }], CW, 11), M, 11, "#222", 1.45); y += Math.round(2 * MM); }
+    const heading = t => {
+      need(Math.round(13 * PT * 3)); y += Math.round(5 * MM);
+      font(700, 13); x.fillStyle = RED; y += Math.round(13 * PT); x.fillText(t, M, y);
+      y += Math.round(2.2 * MM); x.fillStyle = "#dddddd"; x.fillRect(M, y, CW, 2); y += Math.round(3 * MM);
+    };
+    const WC = Math.round(30 * MM);
+    const item = (when, runs) => {
+      const lines = wrap(runs, CW - WC, 10.5), step = Math.round(10.5 * PT * 1.4);
+      need(step * Math.min(lines.length, 2));
+      const y0 = y; font(400, 10.5); x.fillStyle = "#666";
+      wrap([{ t: when || "" }], WC - 16, 10.5).slice(0, 2).forEach((L, i) => x.fillText(L.map(r => r.t).join(""), M, y0 + Math.round(10.5 * PT) + i * step));
+      drawLines(lines, M + WC, 10.5, "#111", 1.4); y += Math.round(1.2 * MM);
+    };
+    CVS.forEach(s => {
+      const items = PR[s[0]].filter(it => it.what); if (!items.length) return;
+      heading(s[1]);
+      items.forEach(it => item(it.when, [{ t: it.what, b: true }].concat(it.where ? [{ t: ", " + it.where }] : [])));
+    });
+    if (PR.includeLog && log.length) {
+      heading("Կլինիկական փորձ թվերով");
+      log.forEach(e => item(e[1] + " դեպք", [{ t: e[0] }]));
+      y += Math.round(1 * MM); drawLines(wrap([{ t: "Ըստ անձնական կլինիկական գրանցամատյանի, " + ISD.fmtDate(ISD.today()) + "։" }], CW, 9), M, 9, "#777", 1.3);
+    }
+    // footer on every page
+    pages.forEach((pc, i) => { const g = pc.getContext("2d"); g.font = "400 " + Math.round(8 * PT) + "px " + SANS; g.fillStyle = "#9aa0a0"; g.textAlign = "right"; g.fillText((PR.nameLatin || PR.name || "") + (pages.length > 1 ? " · " + (i + 1) + "/" + pages.length : ""), W - M, H - Math.round(9 * MM)); });
+    return pages;
   }
 
   /* ---------- more ---------- */

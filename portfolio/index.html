@@ -88,6 +88,12 @@ table.log td.num{text-align:right;white-space:nowrap}
 /* print: CV and logbook */
 #print{font-family:var(--font);color:#111}
 #print h1{font:700 26pt/1.1 var(--serif);margin:0}
+#print .cvph{float:right;width:32mm;height:40mm;object-fit:cover;border-radius:3mm;margin:0 0 4mm 8mm}
+.cvphoto{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.cvphoto .ava{width:84px;height:105px;border-radius:12px;background:#eceeea;display:grid;place-items:center;overflow:hidden;flex:none;color:#9aa19e}
+.cvphoto .ava img{width:100%;height:100%;object-fit:cover}
+.cvphoto .ava svg{width:36px;height:36px}
+label.btn{cursor:pointer}
 #print .sub{font-size:12pt;color:#444;margin:6px 0 14px}
 #print h2{font:700 13pt var(--font);color:#b8321f;margin:16px 0 6px;border-bottom:1px solid #ddd;padding-bottom:3px}
 #print .it{display:grid;grid-template-columns:28mm 1fr;gap:4mm;font-size:10.5pt;margin-bottom:5px;break-inside:avoid}
