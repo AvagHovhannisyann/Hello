@@ -155,9 +155,9 @@
     x.fillStyle = "#8b9591"; x.font = '400 ' + Math.round(32 * f) + 'px "NSA", sans-serif';
     x.fillText([stageName(series.stage), ISD.fmtDate(series.date), proto.name].filter(Boolean).join("   ·   "), pad + 50 * f, hy + headH * 0.78);
     x.textAlign = "right";
-    x.fillStyle = "#eef1ef"; x.font = '700 ' + Math.round(36 * f) + 'px "NSA", sans-serif';
-    x.fillText("ISD Dental School", W - pad - 44 * f, hy + headH * 0.40);
-    if (opts.doctor) { x.fillStyle = "#8b9591"; x.font = '400 ' + Math.round(28 * f) + 'px "NSA", sans-serif'; x.fillText(opts.doctor, W - pad - 44 * f, hy + headH * 0.76); }
+    const chipH = Math.round(headH * 0.62), cw = await ISD.drawLogoChip(x, W - pad - 34 * f, hy + (headH - chipH) / 2, chipH);
+    if (!cw) { x.fillStyle = "#eef1ef"; x.font = '700 ' + Math.round(36 * f) + 'px "NSA", sans-serif'; x.fillText("ISD Dental School", W - pad - 44 * f, hy + headH * 0.40); }
+    if (opts.doctor) { x.fillStyle = "#8b9591"; x.font = '400 ' + Math.round(28 * f) + 'px "NSA", sans-serif'; x.fillText(opts.doctor, W - pad - 34 * f - (cw ? cw + 30 * f : 10 * f), hy + headH * (cw ? 0.52 : 0.76)); }
     x.textAlign = "left";
 
     let y = hy + headH + gap;

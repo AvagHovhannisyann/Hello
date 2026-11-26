@@ -10,6 +10,7 @@
   function build(PptxGenJS, d, opt) {
     d = d || {}; opt = opt || {};
     const TPL = !!opt.template;
+    const LOGO = opt.logo ? String(opt.logo).replace(/^data:/, "") : null;   // "image/png;base64,…"
     const pptx = new PptxGenJS();
     pptx.layout = "LAYOUT_WIDE";
     pptx.author = d.presenter || "ISD Dental School";
@@ -29,7 +30,11 @@
       s._dark = dark;
       if (section) s.addText(section, { x: M, y: 0.42, w: 8, h: 0.3, fontFace: SANS, fontSize: 11, bold: true, color: dark ? C.coral : C.coralD, margin: 0 });
       if (title) s.addText(title, { x: M, y: 0.72, w: W - 2 * M, h: 0.7, fontFace: SERIF, fontSize: 28, bold: true, color: dark ? C.light : C.ink, margin: 0, valign: "top", fit: "shrink" });
-      s.addText([{ text: "ISD Dental School", options: { bold: true } }, { text: foot ? "   " + foot : "" }], { x: M, y: H - 0.42, w: 9, h: 0.25, fontFace: SANS, fontSize: 9, color: dark ? C.gray : C.ink3, margin: 0 });
+      if (LOGO) {   // ISD logo on a small white chip, then the footer text
+        s.addShape(pptx.ShapeType.roundRect, { x: M, y: H - 0.5, w: 1.12, h: 0.38, fill: { color: "FFFFFF" }, line: { color: dark ? "FFFFFF" : C.line, width: 0.5 }, rectRadius: 0.06 });
+        s.addImage({ data: LOGO, x: M + 0.06, y: H - 0.46, w: 1.0, h: 0.3 });
+        if (foot) s.addText(foot, { x: M + 1.28, y: H - 0.44, w: 8, h: 0.25, fontFace: SANS, fontSize: 9, color: dark ? C.gray : C.ink3, margin: 0 });
+      } else s.addText([{ text: "ISD Dental School", options: { bold: true } }, { text: foot ? "   " + foot : "" }], { x: M, y: H - 0.42, w: 9, h: 0.25, fontFace: SANS, fontSize: 9, color: dark ? C.gray : C.ink3, margin: 0 });
       if (notes) s.addNotes(notes);
       return s;
     }

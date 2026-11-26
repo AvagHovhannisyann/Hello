@@ -177,6 +177,20 @@
     return { data: c.toDataURL("image/jpeg", 0.88), w, h };
   }
 
+  /* ISD logo as an image for canvas drawing (collage, PDFs); resolves null if offline and not cached. */
+  let logoP = null;
+  function logo() {
+    if (!logoP) logoP = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = "/assets/brand/isd-logo.png"; });
+    return logoP;
+  }
+  /* White rounded chip with the full logo, right-aligned at (xr, y), height h. Returns chip width (0 if no logo). */
+  async function drawLogoChip(g, xr, y, h) {
+    const im = await logo(); if (!im) return 0;
+    const p = Math.round(h * 0.14), ih = h - 2 * p, iw = Math.round(ih * im.width / im.height), w = iw + 2 * p, x0 = xr - w, r = Math.round(h * 0.16);
+    g.save(); g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(x0 + r, y); g.arcTo(x0 + w, y, x0 + w, y + h, r); g.arcTo(x0 + w, y + h, x0, y + h, r); g.arcTo(x0, y + h, x0, y, r); g.arcTo(x0, y, x0 + w, y, r); g.closePath(); g.fill();
+    g.drawImage(im, x0 + p, y + p, iw, ih); g.restore();
+    return w;
+  }
   /* ---------- profile & install id ---------- */
   async function installId() {
     let id = await db.meta("installId");
@@ -217,7 +231,7 @@
     chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
   };
   const icon = (n, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || "") + ">" + (P[n] || "") + "</svg>";
-  const mark = (dark) => '<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="' + (dark ? "#eef1ef" : "#101517") + '"/><path d="M8 14V8h6M32 26v6h-6" fill="none" stroke="#ff5c47" stroke-width="2.4"/><text x="20" y="25" text-anchor="middle" font-family="NSA,Arial,sans-serif" font-weight="700" font-size="12.5" letter-spacing=".5" fill="' + (dark ? "#101517" : "#f5f5f1") + '">ISD</text></svg>';
+  const mark = () => '<span class="mark logo"><img src="/assets/brand/isd-mark.png" alt="ISD — Innovative Solutions in Dentistry" width="58" height="38"></span>';
 
   function registerSW() {
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
@@ -225,5 +239,5 @@
     }
   }
 
-  root.ISD = { db, persist, uid, esc, $, $$, today, fmtDate, fmtShort, debounce, toast, sheet, confirmBox, saveFile, blobToDataURL, dataURLToBlob, safeName, decode, canvasToBlob, importPhoto, bitmap, drawPhoto, correctedDataURL, installId, icon, mark, registerSW, isTouch };
+  root.ISD = { db, persist, uid, esc, $, $$, today, fmtDate, fmtShort, debounce, toast, sheet, confirmBox, saveFile, blobToDataURL, dataURLToBlob, safeName, decode, canvasToBlob, importPhoto, bitmap, drawPhoto, correctedDataURL, installId, icon, mark, logo, drawLogoChip, registerSW, isTouch };
 })(window);

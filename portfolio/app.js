@@ -298,7 +298,8 @@
         for (const p of (st.photos || []).slice(0, 4)) { const r = await ISD.correctedDataURL(p.photoId, {}, 1600); if (r) photos.push(Object.assign(r, { label: p.label })); }
         d.steps.push({ date: st.date, dateLabel: ISD.fmtDate(st.date), title: st.title, text: st.text, photos });
       }
-      const pptx = ISDDeck.build(window.PptxGenJS, d, { template: false });
+      let logo = null; try { logo = await ISD.blobToDataURL(await (await fetch("/assets/brand/isd-logo.png")).blob()); } catch (e) {}
+      const pptx = ISDDeck.build(window.PptxGenJS, d, { template: false, logo });
       const blob = await pptx.write({ outputType: "blob" });
       note.remove();
       const n = ((await db.meta("exports", 0)) || 0) + 1; await db.setMeta("exports", n);
@@ -418,9 +419,10 @@
     }
 
     page();
+    await ISD.drawLogoChip(x, W - M, M - 6, Math.round(13 * MM));   // ISD logo, top right of page 1
     /* title block */
     font(700, 9); x.fillStyle = RED; y += px(9); x.fillText(["ԿԼԻՆԻԿԱԿԱՆ ԴԵՊՔ", c.discipline].filter(Boolean).join("  ·  "), M, y); y += Math.round(3 * MM);
-    wrap([{ t: c.title || "Անվերնագիր դեպք", b: true }], CW, 22).forEach(L => { y += px(22); x.font = "700 " + px(22) + "px " + SERIF; x.fillStyle = INK; x.fillText(L.map(r => r.t).join(""), M, y); y += Math.round(px(22) * 0.28); });
+    wrap([{ t: c.title || "Անվերնագիր դեպք", b: true }], CW - Math.round(40 * MM), 22).forEach(L => { y += px(22); x.font = "700 " + px(22) + "px " + SERIF; x.fillStyle = INK; x.fillText(L.map(r => r.t).join(""), M, y); y += Math.round(px(22) * 0.28); });
     if (c.subtitle) { y += Math.round(1.5 * MM); text(R(c.subtitle), M, CW, 12, "#444", 1.35); }
     y += Math.round(4 * MM);
     // meta strip

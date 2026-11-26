@@ -185,7 +185,7 @@
   function footer(g, x, prof) {
     g.fillStyle = "#59625f"; g.font = '400 22px "NSA", sans-serif'; g.textAlign = "left"; g.textBaseline = "alphabetic";
     g.fillText(fitText(g, [P.catName(x.cat), x.title].filter(Boolean).join(" · "), PW * 0.6), 80, PH - 46);
-    g.textAlign = "right"; g.fillText(fitText(g, [prof.name, prof.clinic].filter(Boolean).join(" · ") || "ISD Dental School", PW * 0.35), PW - 80, PH - 46); g.textAlign = "left";
+    g.textAlign = "right"; g.fillText(fitText(g, [prof.name, prof.clinic].filter(Boolean).join(" · ") || "", PW * 0.35), PW - 80, PH - 46); g.textAlign = "left";
   }
   async function renderSlide(x, sl, prof) {
     const [c, g] = pdfPage();
@@ -197,6 +197,7 @@
       x.series.forEach(s => { g.fillText(P.stageName(s.stage) + " · " + ISD.fmtDate(s.date), 120, y); y += 48; });
       if (prof.name) { g.fillStyle = "#eef1ef"; g.font = '500 30px "NSA", sans-serif'; g.fillText([prof.name, prof.clinic].filter(Boolean).join(" · "), 120, PH - 150); }
       g.fillStyle = "#ff5c47"; g.fillRect(120, 300, 90, 6);
+      await ISD.drawLogoChip(g, PW - 120, 110, 110);
       return c;
     }
     const top = 80, bottom = PH - 150;
@@ -221,6 +222,7 @@
     const prof = (await db.meta("profile", {})) || {};
     return slidesPDF(async add => {
       const [c, g] = pdfPage();      // album cover
+      await ISD.drawLogoChip(g, PW - 120, 110, 150);
       g.fillStyle = "#ff5c47"; g.fillRect(120, 380, 90, 6); g.font = '700 30px "NSA", sans-serif'; g.fillText("ԴԵՊՔԵՐԻ ԱԼԲՈՄ", 120, 460);
       g.fillStyle = "#eef1ef"; g.font = '700 96px "NSerif", serif'; g.fillText(fitText(g, name, PW - 240), 120, 580);
       g.fillStyle = "#a9b4b1"; g.font = '400 34px "NSA", sans-serif'; g.fillText(groups.length + " դեպք · " + ISD.fmtDate(ISD.today()), 120, 650);
