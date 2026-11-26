@@ -130,7 +130,7 @@
       sec("cx", "Հետազոտություն և լուսանկարներ", '<p class="hint">Լուսանկարների ստանդարտ շարքը պատրաստեք <b>«Ֆոտո»</b> հավելվածում և կցեք այստեղ։ «Նախքան» շարքը կօգտագործվի հետազոտության սլայդներում, «Հետո» շարքը՝ արդյունքի։</p><div id="series"></div>' +
         '<div class="row" style="margin-bottom:16px"><a class="btn" href="../photo/#n-' + esc(c.id) + '">' + icon("camera") + 'Նոր շարք «Ֆոտո»-ում</a><button class="btn ghost" id="link-series">' + icon("link") + "Կցել առկա շարք</button></div>" +
         f("findingsExtra", "Արտաբերանային գտածոներ", { area: true, rows: 2 }) + f("findingsIntra", "Ներբերանային գտածոներ", { area: true, rows: 3, ph: "Պերիօդոնտալ վիճակ, ատամներ, կծվածք" }) +
-        '<label class="f"><span>Ռենտգեն / ԿԿՏ</span></label><div class="thumbs" id="xrays"></div><button class="btn small" id="add-x" style="margin:8px 0 14px">' + icon("plus") + "Ավելացնել պատկեր</button>" +
+        '<label class="f"><span>Ռենտգեն / ԿՏ</span></label><div class="thumbs" id="xrays"></div><button class="btn small" id="add-x" style="margin:8px 0 14px">' + icon("plus") + "Ավելացնել պատկեր</button>" +
         f("radioFindings", "Ռենտգենաբանական գտածոներ", { area: true, rows: 2, ph: "Մեկ կետ՝ մեկ տող" }), openSet.has("cx")) +
       sec("d", "Ախտորոշում", f("diagnosis", "Ախտորոշում", { area: true, rows: 2, ph: "Ընդունված դասակարգմամբ (օր.՝ 2017 AAP/EFP)" }) + f("problems", "Խնդիրների ցուցակ", { area: true, rows: 3, ph: "Մեկ խնդիր՝ մեկ տող, ըստ առաջնահերթության" }), openSet.has("d")) +
       sec("e", "Բուժման տարբերակներ և պլան", '<h3 style="margin:4px 0 10px">Տարբերակներ</h3><div id="options"></div><button class="btn small" id="add-opt">' + icon("plus") + "Տարբերակ</button>" +
@@ -211,7 +211,7 @@
   });
   function drawXrays() {
     const el = $("#xrays"); if (!el) return;
-    el.innerHTML = C.xrays.map((p, k) => '<div class="th"><canvas></canvas><button class="rm" data-xrm="' + k + '" aria-label="Հեռացնել">' + icon("close") + '</button><input type="text" data-xl="' + k + '" value="' + esc(p.label || "") + '" placeholder="ՕՊՏԳ, ԿԿՏ…"></div>').join("");
+    el.innerHTML = C.xrays.map((p, k) => '<div class="th"><canvas></canvas><button class="rm" data-xrm="' + k + '" aria-label="Հեռացնել">' + icon("close") + '</button><input type="text" data-xl="' + k + '" value="' + esc(p.label || "") + '" placeholder="ՕՊՏԳ, ԿՏ…"></div>').join("");
     $$("canvas", el).forEach((cv, k) => paintThumb(cv, C.xrays[k].photoId));
     $$("[data-xrm]", el).forEach(b => b.onclick = () => { C.xrays.splice(+b.dataset.xrm, 1); saveCase(); drawXrays(); });
     $$("[data-xl]", el).forEach(inp => inp.oninput = () => { C.xrays[+inp.dataset.xl].label = inp.value; saveCase(); });
@@ -450,7 +450,7 @@
       row("Արտաբերանային", R(c.findingsExtra)); row("Ներբերանային", R(c.findingsIntra));
       if (pre) { const ph = await seriesPhotos(pre); if (ph.length) { sub("Լուսանկարներ · " + P.stageName(pre.stage) + " · " + ISD.fmtDate(pre.date)); await grid(ph, 3, 0.7); } }
       if (c.xrays.length) {
-        sub("Ռենտգեն / ԿԿՏ");
+        sub("Ռենտգեն / ԿՏ");
         const xr = []; for (const q of c.xrays) { const r = await ISD.correctedDataURL(q.photoId, {}, 1600); if (r) xr.push({ r, label: q.label || "" }); }
         await grid(xr, 2, 0.62, "#111111");
       }
