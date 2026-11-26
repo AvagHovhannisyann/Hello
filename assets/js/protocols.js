@@ -88,6 +88,24 @@
     }
   };
 
+
+  /* Treatment categories — used to sort series into the patient-facing case album. */
+  const CATEGORIES = [
+    { id: "resto", name: "Ռեստավրացիա", sub: "Լցումներ, ներդիրներ", disc: "Թերապևտիկ ստոմատոլոգիա" },
+    { id: "endo", name: "Էնդոդոնտիա", sub: "Արմատախողովակների բուժում", disc: "Էնդոդոնտիա" },
+    { id: "perio", name: "Պարոդոնտոլոգիա", sub: "Լինդ և ոսկոր", disc: "Պարոդոնտոլոգիա" },
+    { id: "surg", name: "Վիրաբուժություն", sub: "Հեռացում, ոսկրի վերականգնում", disc: "Վիրաբուժություն" },
+    { id: "impl", name: "Իմպլանտոլոգիա", sub: "Իմպլանտներ և պսակներ իմպլանտների վրա", disc: "Իմպլանտոլոգիա" },
+    { id: "prosth", name: "Օրթոպեդիկ ստոմատոլոգիա", sub: "Պսակներ, կամուրջներ, պրոթեզներ", disc: "Օրթոպեդիկ ստոմատոլոգիա" },
+    { id: "esth", name: "Էսթետիկ ստոմատոլոգիա", sub: "Վինիրներ, ժպիտի դիզայն, սպիտակեցում", disc: "Էսթետիկ ստոմատոլոգիա" },
+    { id: "ortho", name: "Օրթոդոնտիա", sub: "Բրեկետներ, էլայներներ", disc: "Օրթոդոնտիա" },
+    { id: "pedo", name: "Մանկական ստոմատոլոգիա", sub: "Երեխաների բուժում", disc: "Մանկական ստոմատոլոգիա" },
+    { id: "hyg", name: "Հիգիենա և կանխարգելում", sub: "Պրոֆեսիոնալ հիգիենա", disc: "Հիգիենա և կանխարգելում" },
+    { id: "complex", name: "Համալիր վերականգնում", sub: "Մի քանի ոլորտ միասին", disc: "Համալիր վերականգնում" }
+  ];
+  const catName = id => (CATEGORIES.find(c => c.id === id) || {}).name || "";
+  const catFromDisc = d => (CATEGORIES.find(c => c.disc && c.disc === d) || {}).id || "";
+
   const STAGES = [
     { id: "pre", name: "Նախքան բուժումը" },
     { id: "mid", name: "Բուժման ընթացքում" },
@@ -191,5 +209,5 @@
   }
   function roundRect(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
 
-  root.ISDPhoto = { PROTOCOLS, STAGES, stageName, slotOf, glyph, defaultTransform, renderCollage, fontsReady };
+  root.ISDPhoto = { PROTOCOLS, STAGES, CATEGORIES, catName, catFromDisc, stageName, slotOf, glyph, defaultTransform, renderCollage, fontsReady };
 })(window);
