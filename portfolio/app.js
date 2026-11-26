@@ -1,4 +1,4 @@
-/* ISD «Պորտֆոլիո» — CV, case logbook and CARE-structured case cards, exported to PowerPoint. */
+/* ISD «Պորտֆոլիո» — CV, case logbook and CARE-structured case cards, exported to PowerPoint or PDF. */
 {
   const { db, esc, $, $$, icon, toast } = ISD;
   const P = ISDPhoto;
@@ -65,7 +65,7 @@
     const done = all.filter(c => pct(c) >= 80).length;
     const prof = await db.meta("profile", {});
     app.innerHTML =
-      '<section class="lead"><div><h1>' + (prof && prof.name ? "Բարև, " + esc(prof.name.split(" ")[0]) : "Ձեր կլինիկական պատմությունը") + "</h1><p>Յուրաքանչյուր դեպք՝ CARE կառուցվածքով, լուսանկարներով և մեկ կոճակով PowerPoint։ Դեպքերից ինքնաշխատ կազմվում են գրանցամատյանն ու CV-ի թվերը։</p></div>" +
+      '<section class="lead"><div><h1>' + (prof && prof.name ? "Բարև, " + esc(prof.name.split(" ")[0]) : "Ձեր կլինիկական պատմությունը") + "</h1><p>Յուրաքանչյուր դեպք՝ CARE կառուցվածքով և լուսանկարներով։ Մեկ կոճակով արտահանեք՝ PowerPoint կամ PDF։ Դեպքերից ինքնաշխատ կազմվում են գրանցամատյանն ու CV-ի թվերը։</p></div>" +
       '<div class="kpis"><div class="kpi"><b>' + all.length + '</b><span>դեպք</span></div><div class="kpi"><b>' + all.filter(c => (c.date || "").startsWith(year)).length + "</b><span>" + year + '-ին</span></div><div class="kpi"><b>' + done + "</b><span>պատրաստ ներկայացման</span></div></div></section>" +
       '<div class="toolbar"><input type="text" id="q" placeholder="Որոնել՝ կոդ, վերնագիր, ախտորոշում" value="' + esc(filter) + '"><button class="btn primary" id="new">' + icon("plus") + "Նոր դեպք</button></div>" +
       '<div class="filters"><button class="chip" data-d="" aria-pressed="' + (!disc) + '">Բոլորը</button>' + DISC.filter(d => all.some(c => c.discipline === d)).map(d => '<button class="chip" data-d="' + esc(d) + '" aria-pressed="' + (disc === d) + '">' + esc(d) + "</button>").join("") + "</div>" +
@@ -144,7 +144,7 @@
       sec("i", "Բուժառուի համաձայնություն", '<p class="hint">Գրավոր համաձայնությունը պահեք կլինիկայում։ Այստեղ նշեք, թե ինչի համար է այն տրված։ Դեմքով լուսանկարներ՝ միայն համաձայնությամբ։</p>' +
         [["doc", "Փաստաթղթավորում"], ["edu", "Ուսուցում, դասախոսություններ"], ["pub", "Հրապարակում (ամսագիր, կոնֆերանս)"], ["social", "Սոցիալական ցանցեր"]].map(x => '<label class="switch"><input type="checkbox" data-consent="' + x[0] + '"' + (c.consent[x[0]] ? " checked" : "") + "><span>" + x[1] + "</span></label>").join("") +
         '<label class="f" style="max-width:240px"><span>Համաձայնության ամսաթիվ</span><input type="date" data-consent="date" value="' + esc(c.consent.date || "") + '"></label>', openSet.has("i")) +
-      '<div class="sticky-act"><button class="btn primary" id="pptx">' + icon("slides") + "PowerPoint</button></div>";
+      '<div class="sticky-act"><button class="btn primary" id="exp">' + icon("download") + "Արտահանել</button></div>";
 
     updateCare();
     $$("[data-f]").forEach(el => el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
@@ -159,7 +159,7 @@
       sessionStorage.setItem("open-" + c.id, JSON.stringify([...s]));
     }));
     $("#del").onclick = async () => { if (await ISD.confirmBox("Ջնջե՞լ այս դեպքը։ Լուսանկարների շարքերը կմնան «Ֆոտո» հավելվածում։", "Ջնջել")) { await db.del("cases", c.id); C = null; location.hash = "cases"; } };
-    $("#pptx").onclick = () => exportDeck(C);
+    $("#exp").onclick = () => exportChooser(C);
     $("#link-series").onclick = linkSeries;
     $("#add-x").onclick = () => pickPhotos(async recs => { recs.forEach(r => C.xrays.push({ photoId: r.id, label: "" })); saveCase(); drawXrays(); });
     $("#add-opt").onclick = () => { C.options.push({ name: "", pros: "", cons: "", chosen: !C.options.length }); saveCase(); drawOptions(); };
@@ -251,7 +251,7 @@
   }
 
   /* ---------- PowerPoint export ---------- */
-  function loadScript(src) { return new Promise((res, rej) => { if (window.PptxGenJS) return res(); const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+  function loadScript(src, global) { return new Promise((res, rej) => { if (global && window[global]) return res(); const t = document.createElement("script"); t.src = src; t.onload = res; t.onerror = rej; document.head.appendChild(t); }); }
   const VIEW = { // same view across protocols
     face: ["face"], profile: ["profile"], smile: ["smile", "smileF"], frontal: ["frontal", "retrF"], latR: ["latR", "retrR"], latL: ["latL", "retrL"], occU: ["occU"], occL: ["occL"]
   };
@@ -263,7 +263,7 @@
   async function exportDeck(c) {
     const note = document.createElement("div"); note.className = "toast"; note.textContent = "PowerPoint-ը պատրաստվում է…"; document.body.appendChild(note);
     try {
-      await loadScript("../assets/vendor/pptxgen.bundle.js");
+      await loadScript("../assets/vendor/pptxgen.bundle.js", "PptxGenJS");
       const prof = (await db.meta("profile", {})) || {};
       const ser = (await Promise.all((c.seriesIds || []).map(id => db.get("series", id)))).filter(Boolean).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
       const pre = ser.find(s => s.stage === "pre") || ser[0];
@@ -300,6 +300,216 @@
     } catch (e) {
       note.remove(); console.error(e); toast("Չհաջողվեց պատրաստել PowerPoint-ը");
     }
+  }
+
+
+  /* ---------- export: choose PowerPoint or PDF ---------- */
+  function exportChooser(c) {
+    const sh = ISD.sheet('<header><div class="grow"><h2>Արտահանել դեպքը</h2><p class="muted small" style="margin-top:4px">Ֆայլը կպահվի ձեր հեռախոսում կամ համակարգչում։ Ընտրեք ձևաչափը․</p></div><button class="iconbtn" data-x aria-label="Փակել">' + icon("close") + "</button></header>" +
+      '<div class="expopts">' +
+      '<button class="expopt" data-fmt="pptx"><span class="xi">' + icon("slides") + '</span><span class="xt"><b>PowerPoint</b><span>Ներկայացում՝ սլայդներով, CARE կառուցվածքով և խոսնակի նշումներով։ Կարող եք խմբագրել։</span></span><span class="xe">.pptx</span></button>' +
+      '<button class="expopt" data-fmt="pdf"><span class="xi">' + icon("file") + '</span><span class="xt"><b>PDF</b><span>Դեպքի ամբողջական հաշվետվություն՝ A4, բաժիններով և բոլոր լուսանկարներով։ Հարմար է ուղարկելու, արխիվացնելու և տպելու համար։</span></span><span class="xe">.pdf</span></button>' +
+      "</div>" + (pct(c) < 60 ? '<p class="muted small" style="margin-top:12px">Դեպքը ' + pct(c) + '% լրացված է․ դատարկ բաժինները ֆայլում չեն լինի։</p>' : ""));
+    sh.el.querySelector("[data-x]").onclick = sh.close;
+    $$("[data-fmt]", sh.el).forEach(b => b.onclick = () => { sh.close(); b.dataset.fmt === "pdf" ? exportPDF(c) : exportDeck(c); });
+  }
+
+  /* ---------- PDF case report ---------- */
+  const VIEW_LABEL = { face: "Դեմք", profile: "Պրոֆիլ", smile: "Ժպիտ", frontal: "Առջևից", latR: "Աջ կողմ", latL: "Ձախ կողմ", occU: "Վերին ծնոտ", occL: "Ստորին ծնոտ" };
+  async function seriesPhotos(s) {
+    const out = []; if (!s) return out;
+    const proto = P.PROTOCOLS[s.protocol] || P.PROTOCOLS.basic8;
+    for (const sl of proto.slots) { const a = s.slots && s.slots[sl.key]; if (a && a.photoId) { const r = await ISD.correctedDataURL(a.photoId, a, 1400); if (r) out.push({ r, label: sl.short + " · " + sl.mag }); } }
+    return out;
+  }
+  async function exportPDF(c) {
+    const note = document.createElement("div"); note.className = "toast"; note.textContent = "PDF-ը պատրաստվում է…"; document.body.appendChild(note);
+    try {
+      await loadScript("../assets/vendor/jspdf.umd.min.js", "jspdf");
+      await Promise.all(["400 24px NSA", "700 24px NSA", "700 48px NSerif"].map(f => document.fonts.load(f, "Աա Aa 1")));
+      const prof = (await db.meta("profile", {})) || {};
+      const ser = (await Promise.all((c.seriesIds || []).map(id => db.get("series", id)))).filter(Boolean).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+      const pages = await renderCasePages(c, prof, ser);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true });
+      pages.forEach((pc, i) => { if (i) pdf.addPage(); pdf.addImage(pc.toDataURL("image/jpeg", 0.9), "JPEG", 0, 0, 210, 297, undefined, "FAST"); pc.width = 1; pc.height = 1; });
+      pdf.setProperties({ title: c.title || "Կլինիկական դեպք", subject: c.discipline || "", author: prof.name || "", keywords: c.keywords || "", creator: "ISD Dental School · Պորտֆոլիո" });
+      note.remove();
+      const n = ((await db.meta("exports", 0)) || 0) + 1; await db.setMeta("exports", n);
+      await ISD.saveFile(pdf.output("blob"), ISD.safeName((c.code ? c.code + "_" : "") + (c.title || "case")) + ".pdf");
+    } catch (e) { note.remove(); console.error(e); toast("Չհաջողվեց պատրաստել PDF-ը"); }
+  }
+  async function renderCasePages(c, prof, ser) {
+    const W = 1240, H = 1754, MM = W / 210, PT = 150 / 72, M = Math.round(16 * MM), CW = W - 2 * M, BOTTOM = H - M - Math.round(6 * MM);
+    const SANS = "NSA, Arial, sans-serif", SERIF = "NSerif, Georgia, serif", RED = "#b8321f", INK = "#141414", GREY = "#666", LINE = "#dddddd";
+    const pages = []; let cv, x, y;
+    const page = () => { cv = document.createElement("canvas"); cv.width = W; cv.height = H; x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, W, H); pages.push(cv); y = M; };
+    const font = (w, pt, fam) => { x.font = w + " " + Math.round(pt * PT) + "px " + (fam || SANS); };
+    const need = h => { if (y + h > BOTTOM) page(); };
+    const px = pt => Math.round(pt * PT);
+    function wrap(runs, maxW, pt) {
+      const lines = [[]]; let lw = 0;
+      runs.forEach(r => String(r.t == null ? "" : r.t).split(/(\s+)/).filter(Boolean).forEach(tok => {
+        font(r.b ? 700 : 400, pt);
+        if (/^\s+$/.test(tok)) { if (/\n/.test(tok)) { lines.push([]); lw = 0; return; } if (lw > 0) { lines[lines.length - 1].push({ t: " ", b: r.b, c: r.c }); lw += x.measureText(" ").width; } return; }
+        let w = x.measureText(tok).width;
+        while (w > maxW) {
+          let k = tok.length; while (k > 1 && x.measureText(tok.slice(0, k)).width > maxW - lw) k--;
+          if (lw > 0 && k < 2) { lines.push([]); lw = 0; continue; }
+          lines[lines.length - 1].push({ t: tok.slice(0, k), b: r.b, c: r.c }); lines.push([]); lw = 0; tok = tok.slice(k); w = x.measureText(tok).width;
+        }
+        if (lw + w > maxW && lw > 0) { const L = lines[lines.length - 1]; if (L.length && L[L.length - 1].t === " ") L.pop(); lines.push([]); lw = 0; }
+        lines[lines.length - 1].push({ t: tok, b: r.b, c: r.c }); lw += w;
+      }));
+      return lines.filter(l => l.length);
+    }
+    function text(runs, x0, maxW, pt, color, lh) {
+      const step = Math.round(px(pt) * (lh || 1.42));
+      wrap(runs, maxW, pt).forEach(L => { need(step); let xx = x0; y += px(pt); L.forEach(r => { font(r.b ? 700 : 400, pt); x.fillStyle = r.c || color || INK; x.fillText(r.t, xx, y); xx += x.measureText(r.t).width; }); y += step - px(pt); });
+    }
+    const R = v => [{ t: v }];
+    // section heading, numbered
+    let secNo = 0;
+    const heading = t => {
+      need(px(13) * 4); y += Math.round(6 * MM); secNo++;
+      font(700, 13); x.fillStyle = RED; y += px(13); x.fillText(secNo + ". " + t, M, y);
+      y += Math.round(2.2 * MM); x.fillStyle = LINE; x.fillRect(M, y, CW, 2); y += Math.round(3.5 * MM);
+    };
+    const sub = t => { need(px(11) * 3); y += Math.round(2.5 * MM); text([{ t, b: true }], M, CW, 11, INK, 1.3); y += Math.round(1 * MM); };
+    // label | value row
+    const LC = Math.round(42 * MM);
+    const row = (label, runs) => {
+      if (!runs || !runs.some(r => String(r.t || "").trim())) return;
+      const lines = wrap(runs, CW - LC, 10.5), step = Math.round(px(10.5) * 1.42);
+      const lab = wrap(R(label), LC - 18, 9.5).slice(0, 3), labStep = Math.round(px(9.5) * 1.3);
+      need(Math.max(step * Math.min(lines.length, 2), lab.length * labStep + 8));
+      const y0 = y, pg0 = pages.length; font(400, 9.5); x.fillStyle = GREY;
+      lab.forEach((L, i) => x.fillText(L.map(r => r.t).join(""), M, y0 + px(10.5) + i * labStep));
+      text(runs, M + LC, CW - LC, 10.5, INK, 1.42);
+      if (pages.length === pg0) y = Math.max(y, y0 + px(10.5) + (lab.length - 1) * labStep + Math.round(px(9.5) * 0.5));
+      y += Math.round(1.6 * MM);
+    };
+    const list = (items, pt) => items.forEach((t, i) => {
+      const step = Math.round(px(pt) * 1.42); need(step);
+      const y0 = y; font(700, pt); x.fillStyle = RED; x.fillText((i + 1) + ".", M, y0 + px(pt));
+      text(R(t), M + Math.round(7 * MM), CW - Math.round(7 * MM), pt, INK, 1.42); y += Math.round(0.8 * MM);
+    });
+    async function decodeR(r) { return ISD.decode(await ISD.dataURLToBlob(r.data)); }
+    // photo grid: items [{r, label}], cols, cell aspect (h/w)
+    async function grid(items, cols, aspect, bg) {
+      if (!items.length) return;
+      const gap = Math.round(3 * MM), cw = (CW - gap * (cols - 1)) / cols, ch = Math.round(cw * aspect), lh = px(8.5) * 2;
+      for (let i = 0; i < items.length; i += cols) {
+        need(ch + lh); const y0 = y;
+        for (let k = 0; k < cols && i + k < items.length; k++) {
+          const it = items[i + k], x0 = Math.round(M + k * (cw + gap)), img = await decodeR(it.r);
+          x.save(); x.beginPath(); const rr = 10; x.moveTo(x0 + rr, y0); x.arcTo(x0 + cw, y0, x0 + cw, y0 + ch, rr); x.arcTo(x0 + cw, y0 + ch, x0, y0 + ch, rr); x.arcTo(x0, y0 + ch, x0, y0, rr); x.arcTo(x0, y0, x0 + cw, y0, rr); x.closePath(); x.clip();
+          ISD.drawPhoto(x, img, x0, y0, cw, ch, {}, "contain", bg || "#f3f4f2"); x.restore();
+          if (it.label) { font(400, 8.5); x.fillStyle = GREY; const L = wrap(R(it.label), cw, 8.5)[0]; if (L) x.fillText(L.map(r => r.t).join(""), x0, y0 + ch + px(8.5) + 6); }
+        }
+        y = y0 + ch + lh + Math.round(1.5 * MM);
+      }
+    }
+
+    page();
+    /* title block */
+    font(700, 9); x.fillStyle = RED; y += px(9); x.fillText(["ԿԼԻՆԻԿԱԿԱՆ ԴԵՊՔ", c.discipline].filter(Boolean).join("  ·  "), M, y); y += Math.round(3 * MM);
+    wrap([{ t: c.title || "Անվերնագիր դեպք", b: true }], CW, 22).forEach(L => { y += px(22); x.font = "700 " + px(22) + "px " + SERIF; x.fillStyle = INK; x.fillText(L.map(r => r.t).join(""), M, y); y += Math.round(px(22) * 0.28); });
+    if (c.subtitle) { y += Math.round(1.5 * MM); text(R(c.subtitle), M, CW, 12, "#444", 1.35); }
+    y += Math.round(4 * MM);
+    // meta strip
+    const meta = [["Բուժառուի կոդ", c.code || "—"], ["Սկիզբ", ISD.fmtDate(c.date) || "—"], ["Կարգավիճակ", STATUS[c.status] || "—"], ["Բժշկի դերը", ROLES[c.role] || "—"]];
+    const mh = Math.round(15 * MM); need(mh); x.fillStyle = "#f4f4f1"; x.fillRect(M, y, CW, mh);
+    meta.forEach((m, i) => { const x0 = M + Math.round(4 * MM) + i * (CW / 4); font(400, 8); x.fillStyle = GREY; x.fillText(m[0], x0, y + Math.round(5.5 * MM)); font(700, 10.5); x.fillStyle = INK; const L = wrap(R(m[1]), CW / 4 - 30, 10.5)[0]; x.fillText(L ? L.map(r => r.t).join("") : "", x0, y + Math.round(11.5 * MM)); });
+    y += mh + Math.round(4 * MM);
+    const author = [prof.name, prof.title, prof.clinic, prof.city].filter(Boolean).join(" · ");
+    if (author) text([{ t: "Բժիշկ՝ ", c: GREY }, { t: author }], M, CW, 10, INK, 1.35);
+    if (c.keywords) text([{ t: "Բանալի բառեր՝ ", c: GREY }, { t: c.keywords }], M, CW, 10, INK, 1.35);
+
+    if (has(c.intro)) { heading("Ներածություն"); text(R(c.intro), M, CW, 10.5, INK, 1.45); }
+
+    if ([c.age, c.sex, c.complaint, c.medical, c.dental, c.habits].some(has)) {
+      heading("Բուժառու");
+      row("Տարիք, սեռ", R([c.age ? c.age + " տարեկան" : "", c.sex].filter(Boolean).join(", ")));
+      if (has(c.complaint)) row("Բողոք", [{ t: "«" + c.complaint.trim().replace(/^«|»$/g, "") + "»", b: true }]);
+      row("Բժշկական անամնեզ", R(c.medical)); row("Ստոմատոլոգիական անամնեզ", R(c.dental)); row("Սովորություններ և ակնկալիքներ", R(c.habits));
+    }
+
+    const pre = ser.find(s => s.stage === "pre") || null;
+    const others = ser.filter(s => s !== pre);
+    if ([c.findingsExtra, c.findingsIntra, c.radioFindings].some(has) || pre || c.xrays.length) {
+      heading("Հետազոտություն");
+      row("Արտաբերանային", R(c.findingsExtra)); row("Ներբերանային", R(c.findingsIntra));
+      if (pre) { const ph = await seriesPhotos(pre); if (ph.length) { sub("Լուսանկարներ · " + P.stageName(pre.stage) + " · " + ISD.fmtDate(pre.date)); await grid(ph, 3, 0.7); } }
+      if (c.xrays.length) {
+        sub("Ռենտգեն / ԿԿՏ");
+        const xr = []; for (const q of c.xrays) { const r = await ISD.correctedDataURL(q.photoId, {}, 1600); if (r) xr.push({ r, label: q.label || "" }); }
+        await grid(xr, 2, 0.62, "#111111");
+      }
+      if (has(c.radioFindings)) { y += Math.round(1 * MM); row("Ռենտգենաբանական գտածոներ", R(c.radioFindings)); }
+    }
+
+    const lines = v => String(v || "").split(/\n+/).map(t => t.trim()).filter(Boolean);
+    if (has(c.diagnosis) || has(c.problems)) {
+      heading("Ախտորոշում");
+      row("Ախտորոշում", [{ t: c.diagnosis, b: true }]);
+      if (has(c.problems)) { sub("Խնդիրների ցուցակ"); list(lines(c.problems), 10.5); }
+    }
+
+    const opts = c.options.filter(o => o.name), plan = c.plan.filter(p => p.phase || p.text);
+    if (opts.length || plan.length || has(c.choiceWhy)) {
+      heading("Բուժման տարբերակներ և պլան");
+      opts.forEach((o, i) => row("Տարբերակ " + (i + 1), [{ t: o.name, b: true }].concat(o.chosen ? [{ t: "  ✓ ընտրված", c: RED, b: true }] : []).concat(o.pros ? [{ t: "\n+ " + o.pros }] : []).concat(o.cons ? [{ t: "\n− " + o.cons }] : [])));
+      row("Ինչու այս տարբերակը", R(c.choiceWhy));
+      if (plan.length) { sub("Փուլային պլան"); plan.forEach((p, i) => row((i + 1) + ". " + (p.phase || "Փուլ"), R(p.text || "—"))); }
+    }
+
+    const steps = c.steps.filter(st => st.title || st.text || (st.photos || []).length);
+    if (steps.length) {
+      heading("Բուժման փուլեր");
+      for (const [i, st] of steps.entries()) {
+        sub((i + 1) + ". " + (st.title || "Փուլ") + (st.date ? "  ·  " + ISD.fmtDate(st.date) : ""));
+        if (has(st.text)) text(R(st.text), M, CW, 10.5, INK, 1.45);
+        const ph = []; for (const q of (st.photos || [])) { const r = await ISD.correctedDataURL(q.photoId, {}, 1400); if (r) ph.push({ r, label: q.label || "" }); }
+        if (ph.length) { y += Math.round(2 * MM); await grid(ph, 2, 0.66); }
+      }
+    }
+
+    const post = [...ser].reverse().find(s => s.stage === "post" || s.stage === "fu") || null;
+    const fu = c.followup.filter(q => q.date || q.text);
+    if (has(c.outcome) || post || fu.length) {
+      heading("Արդյունք և հետևում");
+      if (has(c.outcome)) text(R(c.outcome), M, CW, 10.5, INK, 1.45);
+      if (pre && post) {
+        const b = await viewImg(pre, c.compareView), a = await viewImg(post, c.compareView);
+        if (b && a) { sub("Նախքան / հետո · " + (VIEW_LABEL[c.compareView] || "")); await grid([{ r: b, label: "Նախքան · " + ISD.fmtDate(pre.date) }, { r: a, label: "Հետո · " + ISD.fmtDate(post.date) }], 2, 0.66); }
+      }
+      for (const s of others) { const ph = await seriesPhotos(s); if (ph.length) { sub("Լուսանկարներ · " + P.stageName(s.stage) + " · " + ISD.fmtDate(s.date)); await grid(ph, 3, 0.7); } }
+      if (fu.length) { sub("Հետևման այցեր"); fu.forEach(q => row(q.date || "—", R(q.text || "—"))); }
+    }
+
+    if ([c.discussion, c.differently, c.literature, c.conclusions, c.references].some(has)) {
+      heading("Քննարկում և եզրակացություն");
+      row("Ինչ ստացվեց", R(c.discussion)); row("Ինչ կանեի այլ կերպ", R(c.differently)); row("Գրականությունը", R(c.literature));
+      if (has(c.conclusions)) { sub("Եզրակացություններ"); list(lines(c.conclusions), 10.5); }
+      if (has(c.references)) { sub("Գրականություն"); list(lines(c.references), 9); }
+    }
+
+    heading("Բուժառուի համաձայնություն");
+    [["doc", "Փաստաթղթավորում"], ["edu", "Ուսուցում, դասախոսություններ"], ["pub", "Հրապարակում"], ["social", "Սոցիալական ցանցեր"]].forEach(k =>
+      row(k[1], c.consent[k[0]] ? [{ t: "✓ Այո", b: true, c: "#1f7a4d" }] : [{ t: "— Ոչ", c: GREY }]));
+    if (c.consent.date) row("Ամսաթիվ", R(ISD.fmtDate(c.consent.date)));
+    y += Math.round(4 * MM); text([{ t: "Գրավոր համաձայնությունը պահվում է կլինիկայում։ Փաստաթուղթը պատրաստված է ISD Dental School «Պորտֆոլիո» հավելվածով, " + ISD.fmtDate(ISD.today()) + "։", c: "#888" }], M, CW, 8.5, "#888", 1.35);
+
+    // footer on every page
+    const left = [c.code, prof.name].filter(Boolean).join(" · ");
+    pages.forEach((pc, i) => {
+      const g = pc.getContext("2d"); g.font = "400 " + px(8) + "px " + SANS; g.fillStyle = "#9aa0a0";
+      g.fillStyle = LINE; g.fillRect(M, H - Math.round(13 * MM), CW, 1); g.fillStyle = "#9aa0a0";
+      g.textAlign = "left"; g.fillText(left, M, H - Math.round(9 * MM));
+      g.textAlign = "right"; g.fillText((i + 1) + " / " + pages.length, W - M, H - Math.round(9 * MM));
+    });
+    return pages;
   }
 
   /* ---------- logbook ---------- */
@@ -393,9 +603,6 @@
 
 
   /* ---------- CV → PDF file ---------- */
-  function loadScript(src) {
-    return new Promise((res, rej) => { const t = document.createElement("script"); t.src = src; t.onload = res; t.onerror = rej; document.head.appendChild(t); });
-  }
   async function cvData() {
     await db.setMeta("profile", PR);
     const all = (await db.all("cases")).map(normalize);
@@ -406,7 +613,7 @@
     const btn = $("#dcv"); btn.disabled = true; const label = btn.innerHTML; btn.innerHTML = icon("download") + "Պատրաստվում է…";
     try {
       const log = await cvData();
-      if (!window.jspdf) await loadScript("../assets/vendor/jspdf.umd.min.js");
+      await loadScript("../assets/vendor/jspdf.umd.min.js", "jspdf");
       await Promise.all(["400 24px NSA", "700 24px NSA", "700 48px NSerif"].map(f => document.fonts.load(f, "Աա Aa 1")));
       const pages = await renderCvPages(log);
       const { jsPDF } = window.jspdf;
