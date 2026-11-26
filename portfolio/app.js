@@ -717,7 +717,7 @@
     let usage = "";
     try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); usage = Math.round((e.usage || 0) / 1048576) + " ՄԲ"; } } catch (e) {}
     app.innerHTML = '<section class="lead"><div><h1>Ավելին</h1><p>Ձեր տվյալները պահվում են միայն այս սարքում։ Պահեստային պատճենը պահեք ամիսը մեկ՝ համակարգչում կամ ամպում։</p></div></section>' +
-      '<div class="grid2" style="gap:12px">' +
+      '<div class="tools">' +
       '<div class="card"><h3>Պահեստային պատճեն</h3><p class="muted small" style="margin:6px 0 12px">Բոլոր դեպքերը, CV-ն և լուսանկարները մեկ ֆայլում' + (usage ? " · այժմ՝ " + usage : "") + '։ Նույն ֆայլով տվյալները տեղափոխվում են այլ սարք։</p><div class="row"><button class="btn primary" id="bk">' + icon("download") + 'Պահել</button><button class="btn" id="rs">' + icon("upload") + "Վերականգնել</button></div></div>" +
       '<div class="card"><h3>PowerPoint ձևանմուշ</h3><p class="muted small" style="margin:6px 0 12px">Դեպքի ներկայացման դատարկ ձևանմուշ՝ CARE կառուցվածքով և նշումներով յուրաքանչյուր սլայդի համար։</p><a class="btn" href="../assets/ISD_Case_Presentation_Template.pptx" download>' + icon("slides") + "Ներբեռնել</a></div>" +
       '<div class="card"><h3>Ֆոտոարձանագրություն</h3><p class="muted small" style="margin:6px 0 12px">Ստանդարտ շարք (8 կամ 12 կադր), ինքնաշխատ դասավորում և կոլաժ։</p><a class="btn" href="../photo/">' + icon("camera") + "Բացել</a></div>" +

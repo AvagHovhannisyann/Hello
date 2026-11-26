@@ -140,3 +140,6 @@ hr.s{border:0;border-top:1px solid var(--line);margin:18px 0}
 .partners.full .plist{flex-direction:column;gap:12px}
 .partners.full .pt{opacity:1}
 .partners.full .pt img{width:44px;height:44px}
+
+h1,h2,h3{overflow-wrap:break-word}
+@media(max-width:360px){.nav button{font-size:10.5px;letter-spacing:-.01em}}
