@@ -57,6 +57,12 @@
     $("#new").onclick = newSeries;
     $("#guide").onclick = () => guide("basic8");
     $$(".ser").forEach(b => b.onclick = () => location.hash = "s-" + b.dataset.id);
+    const just = sessionStorage.getItem("justSaved");
+    if (just) {   // came here from «Պահել շարքը»: show the list, mark the saved series
+      sessionStorage.removeItem("justSaved");
+      const el = $('.ser[data-id="' + CSS.escape(just) + '"]');
+      if (el) { el.classList.add("flash"); requestAnimationFrame(() => el.scrollIntoView({ block: "center", behavior: "smooth" })); }
+    }
     for (const s of list) {
       const img = $('.ser[data-id="' + CSS.escape(s.id) + '"] img');
       if (!img || !filledCount(s)) continue;
@@ -151,10 +157,18 @@
       '<div class="tools"><button class="btn" id="many">' + icon("upload") + 'Բեռնել բոլորը միասին</button><button class="btn" id="seq"' + (nextKey ? "" : " disabled") + ">" + icon("camera") + 'Լուսանկարել հերթով</button><button class="btn ghost" id="guide">' + icon("info") + "Ուղեցույց</button></div>" +
       '<p class="hint">Ընտրված լուսանկարները դասավորվում են ըստ նկարահանման ժամի՝ <b>1 → ' + pr.slots.length + "</b> հերթականությամբ։ Նկարեք նույն հերթով, և ամեն կադր կհայտնվի իր տեղում։ Սխալ տեղում հայտնված կադրին հպեք → «Տեղափոխել»։</p>" +
       '<div class="slots">' + pr.slots.map((sl, i) => slotHTML(s, sl, i, nextKey)).join("") + "</div>" +
-      (s.extras.length ? '<div class="sec-h"><h3>Չդասավորված · ' + s.extras.length + '</h3><span class="muted small">Հպեք՝ տեղ ընտրելու համար</span></div><div class="tray">' + s.extras.map(id => '<button data-x="' + esc(id) + '" aria-label="Չդասավորված լուսանկար"><canvas></canvas></button>').join("") + "</div>" : "");
+      (s.extras.length ? '<div class="sec-h"><h3>Չդասավորված · ' + s.extras.length + '</h3><span class="muted small">Հպեք՝ տեղ ընտրելու համար</span></div><div class="tray">' + s.extras.map(id => '<button data-x="' + esc(id) + '" aria-label="Չդասավորված լուսանկար"><canvas></canvas></button>').join("") + "</div>" : "") +
+      '<div class="savebar"><button class="btn primary" id="save">' + icon("check") + "Պահել շարքը</button></div>";
 
     $("#edit").onclick = () => editSeries(s);
     $("#collage").onclick = () => location.hash = "c-" + s.id;
+    $("#save").onclick = async () => {
+      await save(s);
+      const n2 = filledCount(s);
+      toast("Շարքը պահված է · " + n2 + "/" + pr.slots.length + " կադր");
+      sessionStorage.setItem("justSaved", s.id);
+      location.hash = "";
+    };
     $("#many").onclick = () => $("#pick-many").click();
     $("#seq").onclick = () => { const k = nextEmpty(s); if (k) { target = { key: k, seq: true }; $("#shoot").click(); } };
     $("#guide").onclick = () => guide(s.protocol);

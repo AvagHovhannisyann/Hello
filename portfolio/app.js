@@ -144,7 +144,7 @@
       sec("i", "Բուժառուի համաձայնություն", '<p class="hint">Գրավոր համաձայնությունը պահեք կլինիկայում։ Այստեղ նշեք, թե ինչի համար է այն տրված։ Դեմքով լուսանկարներ՝ միայն համաձայնությամբ։</p>' +
         [["doc", "Փաստաթղթավորում"], ["edu", "Ուսուցում, դասախոսություններ"], ["pub", "Հրապարակում (ամսագիր, կոնֆերանս)"], ["social", "Սոցիալական ցանցեր"]].map(x => '<label class="switch"><input type="checkbox" data-consent="' + x[0] + '"' + (c.consent[x[0]] ? " checked" : "") + "><span>" + x[1] + "</span></label>").join("") +
         '<label class="f" style="max-width:240px"><span>Համաձայնության ամսաթիվ</span><input type="date" data-consent="date" value="' + esc(c.consent.date || "") + '"></label>', openSet.has("i")) +
-      '<div class="sticky-act"><button class="btn primary" id="exp">' + icon("download") + "Արտահանել</button></div>";
+      '<div class="sticky-act"><button class="btn" id="exp">' + icon("download") + 'Արտահանել</button><button class="btn primary" id="savec">' + icon("check") + "Պահել</button></div>";
 
     updateCare();
     $$("[data-f]").forEach(el => el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
@@ -160,6 +160,12 @@
     }));
     $("#del").onclick = async () => { if (await ISD.confirmBox("Ջնջե՞լ այս դեպքը։ Լուսանկարների շարքերը կմնան «Ֆոտո» հավելվածում։", "Ջնջել")) { await db.del("cases", c.id); C = null; location.hash = "cases"; } };
     $("#exp").onclick = () => exportChooser(C);
+    $("#savec").onclick = async () => {
+      if (!C) return;
+      C.updated = now(); await db.put("cases", C);
+      toast("Դեպքը պահված է · " + pct(C) + "% լրացված");
+      location.hash = "cases";
+    };
     $("#link-series").onclick = linkSeries;
     $("#add-x").onclick = () => pickPhotos(async recs => { recs.forEach(r => C.xrays.push({ photoId: r.id, label: "" })); saveCase(); drawXrays(); });
     $("#add-opt").onclick = () => { C.options.push({ name: "", pros: "", cons: "", chosen: !C.options.length }); saveCase(); drawOptions(); };
