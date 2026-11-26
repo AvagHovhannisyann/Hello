@@ -9,7 +9,7 @@ ol{margin:0;padding:14px 24px 14px 44px;background:#163a3f;color:#d6e2df}
 pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre;overflow:auto;color:#e8f1ee}
 </style></head><body>
 <div class="top"><h1>ISD Dental School · Code.gs для Google Таблицы</h1><button id="b">Скопировать весь код</button></div>
-<ol><li><b>Обновление 7 — регистрация врачей (нужно сделать до лекции):</b> нажмите «Скопировать весь код» → в Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S) → вверху выберите функцию <b>refreshSummary</b> → «Выполнить» (появится лист «Գրանցում», а в «Ամփոփում» — строка «Գրանցված օգտատերեր») → «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется. Регистрации, сделанные раньше, придут в таблицу сами при следующем открытии приложения.</li><li>Первая установка (только если таблицы ещё нет): вставьте код, выберите <b>setup</b> → «Выполнить» → разрешите доступ; затем «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
+<ol><li><b>Обновление 7 — регистрация врачей с марзом и общиной (нужно сделать до лекции; если вы уже вставляли первую версию «Обновления 7» — повторите, лист «Գրանցում» дополнится сам):</b> нажмите «Скопировать весь код» → в Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S) → вверху выберите функцию <b>refreshSummary</b> → «Выполнить» (появится лист «Գրանցում», а в «Ամփոփում» — строка «Գրանցված օգտատերեր» и таблица по марзам) → «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется. Регистрации, сделанные раньше, придут в таблицу сами при следующем открытии приложения.</li><li>Первая установка (только если таблицы ещё нет): вставьте код, выберите <b>setup</b> → «Выполнить» → разрешите доступ; затем «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
 <pre id="c">/**
  * ISD Dental School — сбор анонимной анкеты и счётчиков из приложений «Պորտֆոլիո» и «Ֆոտոարձանագրություն».
  *
@@ -20,7 +20,7 @@ pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre
  *  4. Скопируйте URL веб-приложения (…/exec) и вставьте в assets/js/config.js → endpoint.
  *
  * Что приходит:
- *  — «Գրանցում»: регистрация врача (имя, телефон, e-mail, специализация, клиника) — один раз, с его согласия;
+ *  — «Գրանցում»: регистрация врача (имя, телефон, e-mail, специализация, марз и община, клиника) — один раз, с его согласия;
  *  — «Հարցում»: анонимные ответы на 12 вопросов — НЕ связаны с регистрацией (другой ID);
  *  — «Օգտագործում»: счётчики (кол-во кейсов, серий фото, направления) — тоже без имени.
  * Чего здесь нет и не может быть: данных пациентов, фотографий, текстов кейсов.
@@ -30,7 +30,8 @@ const SH_SURVEY = &quot;Հարցում&quot;;
 const SH_STATS = &quot;Օգտագործում&quot;;
 const SH_SUMMARY = &quot;Ամփոփում&quot;;
 const SH_REG = &quot;Գրանցում&quot;;
-const REG_COLS = [&quot;Գրանցվել է&quot;, &quot;Թարմացվել է&quot;, &quot;ID&quot;, &quot;Անուն, ազգանուն&quot;, &quot;Հեռախոս&quot;, &quot;Էլ. փոստ&quot;, &quot;Մասնագիտացում&quot;, &quot;Կլինիկա / բուհ&quot;, &quot;Լուրեր դասընթացների մասին&quot;, &quot;Հավելված&quot;, &quot;Սարք&quot;];
+const REG_COLS = [&quot;Գրանցվել է&quot;, &quot;Թարմացվել է&quot;, &quot;ID&quot;, &quot;Անուն, ազգանուն&quot;, &quot;Հեռախոս&quot;, &quot;Էլ. փոստ&quot;, &quot;Մասնագիտացում&quot;, &quot;Մարզ&quot;, &quot;Համայնք / բնակավայր&quot;, &quot;Կլինիկա / բուհ&quot;, &quot;Լուրեր դասընթացների մասին&quot;, &quot;Հավելված&quot;, &quot;Սարք&quot;];
+const MARZ = [&quot;Երևան&quot;, &quot;Արագածոտն&quot;, &quot;Արարատ&quot;, &quot;Արմավիր&quot;, &quot;Գեղարքունիք&quot;, &quot;Կոտայք&quot;, &quot;Լոռի&quot;, &quot;Շիրակ&quot;, &quot;Սյունիք&quot;, &quot;Տավուշ&quot;, &quot;Վայոց ձոր&quot;, &quot;Արտերկիր&quot;];
 
 // Keep in sync with assets/js/survey.js
 const Q = [
@@ -99,7 +100,11 @@ function regSheet(ss) {
     sh.getRange(1, 1, 1, REG_COLS.length).setValues([REG_COLS]).setFontWeight(&quot;bold&quot;);
     sh.setFrozenRows(1);
     sh.getRange(&quot;E:E&quot;).setNumberFormat(&quot;@&quot;);
-    sh.setColumnWidth(4, 220); sh.setColumnWidth(6, 200); sh.setColumnWidth(7, 220); sh.setColumnWidth(8, 220);
+    sh.setColumnWidth(4, 220); sh.setColumnWidth(6, 200); sh.setColumnWidth(7, 220); sh.setColumnWidth(9, 200); sh.setColumnWidth(10, 220);
+  } else if (String(sh.getRange(1, 8).getValue()) !== &quot;Մարզ&quot;) {
+    // sheet made by the first version of Update 7 (no marz / community): add the two columns after «Մասնագիտացում»
+    sh.insertColumnsAfter(7, 2);
+    sh.getRange(1, 1, 1, REG_COLS.length).setValues([REG_COLS]).setFontWeight(&quot;bold&quot;);
   }
   return sh;
 }
@@ -113,8 +118,8 @@ function register(ss, d) {
   if (i &lt; 0) i = vals.findIndex(v =&gt; digits(v[4]) === key);
   const join = (a, b) =&gt; { const set = String(a || &quot;&quot;).split(&quot;, &quot;).filter(String); if (b &amp;&amp; set.indexOf(b) &lt; 0) set.push(b); return set.join(&quot;, &quot;); };
   const old = i &gt;= 0 ? vals[i] : null;
-  const row = [old ? old[0] : new Date(), new Date(), old ? old[2] : id, clip(d.name), phone, clip(d.email), clip(d.role), clip(d.place),
-    d.news === true ? &quot;այո&quot; : &quot;ոչ&quot;, join(old &amp;&amp; old[9], clip(d.app)), join(old &amp;&amp; old[10], clip(d.device))];
+  const row = [old ? old[0] : new Date(), new Date(), old ? old[2] : id, clip(d.name), phone, clip(d.email), clip(d.role), clip(d.region), clip(d.locality), clip(d.place),
+    d.news === true ? &quot;այո&quot; : &quot;ոչ&quot;, join(old &amp;&amp; old[11], clip(d.app)), join(old &amp;&amp; old[12], clip(d.device))];
   if (old) sh.getRange(i + 2, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
   return &quot;registered&quot;;
 }
@@ -160,6 +165,10 @@ function refreshSummary() {
       rows.push([oi === 0 ? q[1] : &quot;&quot;, opt, f, &quot;=IF($B$2=0,0,C&quot; + r + &quot;/$B$2)&quot;]);
     });
   });
+  // registrations by marz, under the survey block
+  const reg = &quot;&#x27;&quot; + SH_REG + &quot;&#x27;!H2:H&quot;;
+  rows.push([&quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;], [&quot;Գրանցվածներ ըստ մարզերի&quot;, &quot;Մարզ&quot;, &quot;Քանակ&quot;, &quot;%&quot;]);
+  MARZ.forEach(m =&gt; { const r = rows.length + 1; rows.push([&quot;&quot;, m, &quot;=COUNTIF(&quot; + reg + &quot;,&quot; + lit(m) + &quot;)&quot;, &quot;=IF($B$3=0,0,C&quot; + r + &quot;/$B$3)&quot;]); });
   out.clear();
   const isF = v =&gt; typeof v === &quot;string&quot; &amp;&amp; v.charAt(0) === &quot;=&quot;;
   out.getRange(1, 1, rows.length, 4).setValues(rows.map(r =&gt; r.map(v =&gt; isF(v) ? &quot;&quot; : v)));
@@ -167,9 +176,7 @@ function refreshSummary() {
   // Write with &quot;,&quot;, check the result, and switch to &quot;;&quot; if the Sheet could not read it.
   const put = sep =&gt; {
     const fx = f =&gt; sep === &quot;,&quot; ? f : f.replace(/,(?=(?:[^&quot;]*&quot;[^&quot;]*&quot;)*[^&quot;]*$)/g, &quot;;&quot;);
-    out.getRange(2, 2).setFormula(rows[1][1]);
-    out.getRange(3, 2).setFormula(rows[2][1]);
-    out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r =&gt; [fx(r[2]), fx(r[3])]));
+    rows.forEach((r, i) =&gt; r.forEach((v, c) =&gt; { if (isF(v)) out.getRange(i + 1, c + 1).setFormula(fx(v)); }));
     SpreadsheetApp.flush();
     return !/^#/.test(String(out.getRange(5, 3).getDisplayValue())) &amp;&amp; !/^#/.test(String(out.getRange(5, 4).getDisplayValue()));
   };
@@ -177,6 +184,7 @@ function refreshSummary() {
   out.getRange(1, 1).setFontSize(18).setFontWeight(&quot;bold&quot;);
   out.getRange(2, 1, 2, 2).setFontWeight(&quot;bold&quot;);
   out.getRange(4, 1, 1, 4).setFontWeight(&quot;bold&quot;);
+  out.getRange(rows.length - MARZ.length, 1, 1, 4).setFontWeight(&quot;bold&quot;);
   out.getRange(5, 4, rows.length - 4, 1).setNumberFormat(&quot;0%&quot;);
   out.setColumnWidth(1, 240); out.setColumnWidth(2, 300);
 }

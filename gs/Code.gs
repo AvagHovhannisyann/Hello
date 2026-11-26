@@ -8,7 +8,7 @@
  *  4. Скопируйте URL веб-приложения (…/exec) и вставьте в assets/js/config.js → endpoint.
  *
  * Что приходит:
- *  — «Գրանցում»: регистрация врача (имя, телефон, e-mail, специализация, клиника) — один раз, с его согласия;
+ *  — «Գրանցում»: регистрация врача (имя, телефон, e-mail, специализация, марз и община, клиника) — один раз, с его согласия;
  *  — «Հարցում»: анонимные ответы на 12 вопросов — НЕ связаны с регистрацией (другой ID);
  *  — «Օգտագործում»: счётчики (кол-во кейсов, серий фото, направления) — тоже без имени.
  * Чего здесь нет и не может быть: данных пациентов, фотографий, текстов кейсов.
@@ -18,7 +18,8 @@ const SH_SURVEY = "Հարցում";
 const SH_STATS = "Օգտագործում";
 const SH_SUMMARY = "Ամփոփում";
 const SH_REG = "Գրանցում";
-const REG_COLS = ["Գրանցվել է", "Թարմացվել է", "ID", "Անուն, ազգանուն", "Հեռախոս", "Էլ. փոստ", "Մասնագիտացում", "Կլինիկա / բուհ", "Լուրեր դասընթացների մասին", "Հավելված", "Սարք"];
+const REG_COLS = ["Գրանցվել է", "Թարմացվել է", "ID", "Անուն, ազգանուն", "Հեռախոս", "Էլ. փոստ", "Մասնագիտացում", "Մարզ", "Համայնք / բնակավայր", "Կլինիկա / բուհ", "Լուրեր դասընթացների մասին", "Հավելված", "Սարք"];
+const MARZ = ["Երևան", "Արագածոտն", "Արարատ", "Արմավիր", "Գեղարքունիք", "Կոտայք", "Լոռի", "Շիրակ", "Սյունիք", "Տավուշ", "Վայոց ձոր", "Արտերկիր"];
 
 // Keep in sync with assets/js/survey.js
 const Q = [
@@ -87,7 +88,11 @@ function regSheet(ss) {
     sh.getRange(1, 1, 1, REG_COLS.length).setValues([REG_COLS]).setFontWeight("bold");
     sh.setFrozenRows(1);
     sh.getRange("E:E").setNumberFormat("@");
-    sh.setColumnWidth(4, 220); sh.setColumnWidth(6, 200); sh.setColumnWidth(7, 220); sh.setColumnWidth(8, 220);
+    sh.setColumnWidth(4, 220); sh.setColumnWidth(6, 200); sh.setColumnWidth(7, 220); sh.setColumnWidth(9, 200); sh.setColumnWidth(10, 220);
+  } else if (String(sh.getRange(1, 8).getValue()) !== "Մարզ") {
+    // sheet made by the first version of Update 7 (no marz / community): add the two columns after «Մասնագիտացում»
+    sh.insertColumnsAfter(7, 2);
+    sh.getRange(1, 1, 1, REG_COLS.length).setValues([REG_COLS]).setFontWeight("bold");
   }
   return sh;
 }
@@ -101,8 +106,8 @@ function register(ss, d) {
   if (i < 0) i = vals.findIndex(v => digits(v[4]) === key);
   const join = (a, b) => { const set = String(a || "").split(", ").filter(String); if (b && set.indexOf(b) < 0) set.push(b); return set.join(", "); };
   const old = i >= 0 ? vals[i] : null;
-  const row = [old ? old[0] : new Date(), new Date(), old ? old[2] : id, clip(d.name), phone, clip(d.email), clip(d.role), clip(d.place),
-    d.news === true ? "այո" : "ոչ", join(old && old[9], clip(d.app)), join(old && old[10], clip(d.device))];
+  const row = [old ? old[0] : new Date(), new Date(), old ? old[2] : id, clip(d.name), phone, clip(d.email), clip(d.role), clip(d.region), clip(d.locality), clip(d.place),
+    d.news === true ? "այո" : "ոչ", join(old && old[11], clip(d.app)), join(old && old[12], clip(d.device))];
   if (old) sh.getRange(i + 2, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
   return "registered";
 }
@@ -148,6 +153,10 @@ function refreshSummary() {
       rows.push([oi === 0 ? q[1] : "", opt, f, "=IF($B$2=0,0,C" + r + "/$B$2)"]);
     });
   });
+  // registrations by marz, under the survey block
+  const reg = "'" + SH_REG + "'!H2:H";
+  rows.push(["", "", "", ""], ["Գրանցվածներ ըստ մարզերի", "Մարզ", "Քանակ", "%"]);
+  MARZ.forEach(m => { const r = rows.length + 1; rows.push(["", m, "=COUNTIF(" + reg + "," + lit(m) + ")", "=IF($B$3=0,0,C" + r + "/$B$3)"]); });
   out.clear();
   const isF = v => typeof v === "string" && v.charAt(0) === "=";
   out.getRange(1, 1, rows.length, 4).setValues(rows.map(r => r.map(v => isF(v) ? "" : v)));
@@ -155,9 +164,7 @@ function refreshSummary() {
   // Write with ",", check the result, and switch to ";" if the Sheet could not read it.
   const put = sep => {
     const fx = f => sep === "," ? f : f.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g, ";");
-    out.getRange(2, 2).setFormula(rows[1][1]);
-    out.getRange(3, 2).setFormula(rows[2][1]);
-    out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r => [fx(r[2]), fx(r[3])]));
+    rows.forEach((r, i) => r.forEach((v, c) => { if (isF(v)) out.getRange(i + 1, c + 1).setFormula(fx(v)); }));
     SpreadsheetApp.flush();
     return !/^#/.test(String(out.getRange(5, 3).getDisplayValue())) && !/^#/.test(String(out.getRange(5, 4).getDisplayValue()));
   };
@@ -165,6 +172,7 @@ function refreshSummary() {
   out.getRange(1, 1).setFontSize(18).setFontWeight("bold");
   out.getRange(2, 1, 2, 2).setFontWeight("bold");
   out.getRange(4, 1, 1, 4).setFontWeight("bold");
+  out.getRange(rows.length - MARZ.length, 1, 1, 4).setFontWeight("bold");
   out.getRange(5, 4, rows.length - 4, 1).setNumberFormat("0%");
   out.setColumnWidth(1, 240); out.setColumnWidth(2, 300);
 }

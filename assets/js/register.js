@@ -6,6 +6,22 @@
   "use strict";
   const KEY = "isd-reg";
   const ROLES = ["Ուսանող", "Օրդինատոր", "Ընդհանուր (ընտանեկան) ստոմատոլոգ", "Թերապևտ", "Օրթոպեդ", "Վիրաբույժ, իմպլանտոլոգ", "Պերիօդոնտոլոգ", "Օրթոդոնտ", "Մանկական ստոմատոլոգ", "Այլ"];
+  /* Marz is a fixed list; the community/settlement is typed, with the 46 towns as suggestions —
+     the list of consolidated communities keeps changing (70 → 64), town and village names do not. */
+  const TOWNS = {
+    "Արագածոտն": ["Աշտարակ", "Ապարան", "Թալին"],
+    "Արարատ": ["Արտաշատ", "Արարատ", "Մասիս", "Վեդի"],
+    "Արմավիր": ["Արմավիր", "Վաղարշապատ (Էջմիածին)", "Մեծամոր"],
+    "Գեղարքունիք": ["Գավառ", "Սևան", "Մարտունի", "Վարդենիս", "Ճամբարակ"],
+    "Կոտայք": ["Աբովյան", "Հրազդան", "Չարենցավան", "Եղվարդ", "Բյուրեղավան", "Նոր Հաճն", "Ծաղկաձոր"],
+    "Լոռի": ["Վանաձոր", "Ալավերդի", "Ստեփանավան", "Սպիտակ", "Տաշիր", "Թումանյան", "Ախթալա"],
+    "Շիրակ": ["Գյումրի", "Արթիկ", "Մարալիկ"],
+    "Սյունիք": ["Կապան", "Գորիս", "Սիսիան", "Մեղրի", "Քաջարան", "Ագարակ"],
+    "Տավուշ": ["Իջևան", "Դիլիջան", "Նոյեմբերյան", "Բերդ", "Այրում"],
+    "Վայոց ձոր": ["Եղեգնաձոր", "Ջերմուկ", "Վայք"]
+  };
+  const DISTRICTS = ["Աջափնյակ", "Ավան", "Արաբկիր", "Դավթաշեն", "Էրեբունի", "Կենտրոն", "Մալաթիա-Սեբաստիա", "Նոր Նորք", "Նորք-Մարաշ", "Նուբարաշեն", "Շենգավիթ", "Քանաքեռ-Զեյթուն"];
+  const REGIONS = ["Երևան"].concat(Object.keys(TOWNS), ["Արտերկիր"]);
   const cfg = () => root.ISD_CONFIG || {};
   const esc = s => ISD.esc(s == null ? "" : s);
 
@@ -30,7 +46,7 @@
     const r = get();
     if (!r || r.synced || busy || !cfg().endpoint || !navigator.onLine) return;
     busy = true;
-    const body = JSON.stringify({ type: "register", regId: r.id, name: r.name, phone: r.phone, email: r.email, role: r.role, place: r.place, news: !!r.news, app: r.app, device: r.device, version: cfg().version, ts: new Date().toISOString() });
+    const body = JSON.stringify({ type: "register", regId: r.id, name: r.name, phone: r.phone, email: r.email, role: r.role, region: r.region, locality: r.locality, place: r.place, news: !!r.news, app: r.app, device: r.device, version: cfg().version, ts: new Date().toISOString() });
     try {
       const res = await fetch(cfg().endpoint, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body });
       if ((await res.text()).trim() === "registered") { const x = get(); if (x && x.id === r.id && x.rev === r.rev) { x.synced = true; put(x); } }
@@ -47,13 +63,26 @@
       '<label class="f"><span>Հեռախոս *</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+374 __ ______" value="' + esc(r.phone) + '" required></label>' +
       '<label class="f"><span>Էլ. փոստ</span><input type="email" name="email" autocomplete="email" value="' + esc(r.email) + '"><small>Ոչ պարտադիր</small></label>' +
       '<label class="f"><span>Մասնագիտացում *</span><select name="role" required><option value="">Ընտրեք</option>' + ROLES.map(x => '<option' + (r.role === x ? " selected" : "") + ">" + esc(x) + "</option>").join("") + "</select></label>" +
+      '<label class="f"><span>Որտե՞ղ եք աշխատում *</span><select name="region" required><option value="">Ընտրեք մարզը</option>' + REGIONS.map(x => '<option' + (r.region === x ? " selected" : "") + ">" + esc(x) + "</option>").join("") + '</select><small>Ուսանողները՝ որտեղ են սովորում</small></label>' +
+      '<div data-loc>' + locField(r.region, r.locality) + "</div>" +
       '<label class="f"><span>Կլինիկա կամ բուհ</span><input type="text" name="place" autocomplete="organization" value="' + esc(r.place) + '"><small>Ոչ պարտադիր</small></label>' +
       '<label class="regcheck"><input type="checkbox" name="consent"' + (r.id ? " checked" : "") + '><span>Համաձայն եմ, որ այս տվյալները պահվեն ISD Dental School-ում՝ օգտատերերի հաշվառման և ինձ հետ կապվելու համար։ Բուժառուների տվյալները, լուսանկարները և դեպքերը <b>չեն ուղարկվում</b>։ *</span></label>' +
       '<label class="regcheck"><input type="checkbox" name="news"' + (r.news ? " checked" : "") + "><span>Ցանկանում եմ տեղեկանալ ISD Dental School-ի դասընթացների և միջոցառումների մասին</span></label>" +
       '<button class="btn primary regsubmit" type="submit">' + esc(opts.submit) + "</button></form>";
   }
 
+  function locField(region, val) {
+    val = val || "";
+    if (!region) return "";
+    if (region === "Երևան") return '<label class="f"><span>Վարչական շրջան</span><select name="locality"><option value="">Ընտրեք</option>' + DISTRICTS.map(x => '<option' + (val === x ? " selected" : "") + ">" + esc(x) + "</option>").join("") + "</select><small>Ոչ պարտադիր</small></label>";
+    if (region === "Արտերկիր") return '<label class="f"><span>Երկիր, քաղաք *</span><input type="text" name="locality" autocomplete="off" placeholder="Օրինակ՝ Ֆրանսիա, Լիոն" value="' + esc(val) + '"></label>';
+    const id = "towns-" + REGIONS.indexOf(region);
+    return '<label class="f"><span>Համայնք կամ բնակավայր *</span><input type="text" name="locality" list="' + id + '" autocomplete="off" placeholder="Օրինակ՝ ' + esc(TOWNS[region][0]) + ' կամ գյուղի անունը" value="' + esc(val) + '"><datalist id="' + id + '">' + TOWNS[region].map(x => '<option value="' + esc(x) + '">').join("") + "</datalist><small>Քաղաքը, համայնքը կամ գյուղը</small></label>";
+  }
+
   function bind(f, app, prev, done) {
+    const reg = f.elements.region, box = f.querySelector("[data-loc]");
+    reg.onchange = () => { box.innerHTML = locField(reg.value, ""); const i = box.querySelector("input"); if (i) i.focus(); };
     f.onsubmit = e => {
       e.preventDefault();
       const fd = new FormData(f);
@@ -63,9 +92,11 @@
       if (digits(v("phone")).length < 8) return bad("phone", "Ստուգեք հեռախոսահամարը");
       if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) return bad("email", "Ստուգեք էլ. փոստի հասցեն");
       if (!v("role")) return bad("role", "Ընտրեք մասնագիտացումը");
+      if (!v("region")) return bad("region", "Ընտրեք, թե որտեղ եք աշխատում");
+      if (v("region") !== "Երևան" && v("locality").length < 2) return bad("locality", v("region") === "Արտերկիր" ? "Լրացրեք երկիրը և քաղաքը" : "Լրացրեք համայնքը կամ բնակավայրը");
       if (!fd.get("consent")) return bad("consent", "Գրանցման համար անհրաժեշտ է համաձայնություն");
       const r = Object.assign({}, prev || {}, {
-        id: (prev && prev.id) || ISD.uid(), name: v("name"), phone: v("phone"), email: v("email"), role: v("role"), place: v("place"),
+        id: (prev && prev.id) || ISD.uid(), name: v("name"), phone: v("phone"), email: v("email"), role: v("role"), region: v("region"), locality: v("locality"), place: v("place"),
         news: !!fd.get("news"), app: (prev && prev.app) || app, device: device(), at: (prev && prev.at) || Date.now(), rev: Date.now(), synced: false
       });
       put(r);
@@ -79,7 +110,7 @@
     try {
       const p = (await ISD.db.meta("profile", null)) || {};
       let ch = false;
-      [["name", r.name], ["phone", r.phone], ["email", r.email], ["clinic", r.place]].forEach(([k, val]) => { if (!p[k] && val) { p[k] = val; ch = true; } });
+      [["name", r.name], ["phone", r.phone], ["email", r.email], ["clinic", r.place], ["city", r.region === "Երևան" ? "Երևան" : r.locality]].forEach(([k, val]) => { if (!p[k] && val) { p[k] = val; ch = true; } });
       if (ch) await ISD.db.setMeta("profile", p);
     } catch (e) {}
   }
@@ -93,7 +124,8 @@
 
   /* Blocks the app until the doctor registers. The anonymous survey stays reachable from the gate. */
   async function gate(app, start) {
-    if (get()) { start(); sync(); return; }
+    const prev = get();
+    if (prev && prev.region) { start(); sync(); return; }
     const el = document.createElement("div");
     el.className = "reggate";
     el.setAttribute("role", "dialog");
@@ -104,10 +136,10 @@
       el.innerHTML = '<div class="reginner">' +
         '<div class="reghead">' + ISD.mark(false) + '<span class="regapp">' + esc(appName) + "</span></div>" +
         '<h1>Գրանցում</h1><p class="lead2">Մեկ անգամ՝ հավելվածից օգտվելու համար։ Հաջորդ անգամ այս սարքում հավելվածը կբացվի անմիջապես։ Գրանցումը գործում է նաև մյուս ISD հավելվածի համար։</p>' +
-        (await surveyCard(app)) + form(null, { submit: "Գրանցվել և սկսել" }) +
+        (await surveyCard(app)) + form(prev, { submit: prev ? "Պահել և շարունակել" : "Գրանցվել և սկսել" }) +
         '<p class="regfoot">ISD Dental School · Innovative Solutions in Dentistry</p></div>';
       bindSurvey();
-      bind(el.querySelector("#regf"), app, null, async r => {
+      bind(el.querySelector("#regf"), app, prev, async r => {
         await seedProfile(r);
         el.remove();
         document.documentElement.style.overflow = "";
@@ -132,7 +164,7 @@
     const r = get();
     if (!r) return "";
     return '<div class="card"><h3>Գրանցում</h3><p class="small" style="margin:8px 0 2px"><b>' + esc(r.name) + "</b></p>" +
-      '<p class="muted small" style="margin:0 0 12px">' + esc([r.role, r.phone, r.email].filter(Boolean).join(" · ")) + "<br>" +
+      '<p class="muted small" style="margin:0 0 12px">' + esc([r.role, [r.locality, r.region].filter(Boolean).join(", "), r.phone, r.email].filter(Boolean).join(" · ")) + "<br>" +
       (r.synced ? "Ուղարկված է ISD Dental School-ին" : "Կուղարկվի ինտերնետին միանալուն պես") + "</p>" +
       '<button class="btn" type="button" id="regedit">' + ISD.icon("edit") + "Փոխել տվյալները</button></div>";
   }
