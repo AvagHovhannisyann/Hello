@@ -576,5 +576,5 @@
     $$("[data-c]", sh.el).forEach(b => b.onclick = async () => link(await db.get("cases", b.dataset.c)));
   }
 
-  route();
+  ISDReg.gate("photo", route);
 }

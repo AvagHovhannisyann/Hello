@@ -143,3 +143,17 @@ hr.s{border:0;border-top:1px solid var(--line);margin:18px 0}
 
 h1,h2,h3{overflow-wrap:break-word}
 @media(max-width:360px){.nav button{font-size:10.5px;letter-spacing:-.01em}}
+/* registration gate */
+.reggate{position:fixed;inset:0;z-index:40;background:var(--paper);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(20px + var(--safe-t)) max(18px,4vw) calc(28px + var(--safe-b))}
+.reginner{max-width:520px;margin:0 auto}
+.reghead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+.regapp{font-size:13px;color:var(--ink-3);text-align:right}
+.reggate h1{font-size:clamp(30px,8vw,40px);line-height:1.1;margin:0 0 10px;letter-spacing:-.01em}
+.reggate .lead2{color:var(--ink-2);margin:0 0 20px;font-size:15px}
+.regsurvey{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card);margin:0 0 22px}
+.regsurvey b{display:block;font-size:15px}.regsurvey span{display:block;font-size:13px;color:var(--ink-3);margin-top:2px}
+.regsurvey .grow{flex:1 1 220px;min-width:0}.regsurvey .btn{flex:none}
+.regcheck{display:flex;align-items:flex-start;gap:12px;margin:4px 0 14px;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.regcheck input{width:22px;height:22px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.regsubmit{width:100%;justify-content:center;min-height:52px;font-size:17px;margin-top:8px}
+.regfoot{font-size:12px;color:var(--ink-3);text-align:center;margin:22px 0 0;letter-spacing:.02em}

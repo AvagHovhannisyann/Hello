@@ -1,5 +1,5 @@
 /* ISD Dental School — anonymous survey + usage counters.
-   Sent: the answers below and counts (cases, photo series). Never sent: names, contacts, patients, photos. */
+   Sent: the answers below and counts (cases, photo series), under an install ID that is never linked to the registration. Never sent: patients, photos. */
 (function (root) {
   "use strict";
   const Q = [
@@ -46,7 +46,7 @@
     const html = '<header><div class="grow"><h2>Կարճ հարցում</h2><p class="muted small" style="margin-top:6px">12 հարց, 2 րոպե։ Անանուն է։ Օգնում է ISD Dental School-ին հասկանալ, ինչպես են հայ ստոմատոլոգները փաստաթղթավորում իրենց աշխատանքը։</p></div><button class="iconbtn" data-x aria-label="Փակել">' + ISD.icon("close") + '</button></header>' +
       '<form id="svf">' + Q.map((q, i) => '<fieldset style="border:0;padding:0;margin:0 0 18px"><legend style="font-weight:700;margin-bottom:8px">' + (i + 1) + ". " + ISD.esc(q.t) + (q.multi ? ' <span class="muted tiny" style="font-weight:400">(մի քանիսը)</span>' : "") + '</legend><div class="chips">' +
         q.o.map((o, j) => '<label class="chip"><input type="' + (q.multi ? "checkbox" : "radio") + '" name="' + q.id + '" value="' + j + '">' + ISD.esc(o) + "</label>").join("") + "</div></fieldset>").join("") +
-      '<label class="row" style="align-items:flex-start;gap:12px;margin:6px 0 18px;font-size:14px"><input type="checkbox" name="consent" style="width:22px;height:22px;margin-top:2px;flex:none"><span>Համաձայն եմ, որ իմ անանուն պատասխանները և հավելվածի ընդհանուր թվերը (դեպքերի և լուսանկարների շարքերի քանակը) ուղարկվեն ISD Dental School-ին՝ հետազոտության համար։ Անուն, հեռախոս, բուժառուների տվյալներ և լուսանկարներ <b>չեն ուղարկվում</b>։</span></label>' +
+      '<label class="row" style="align-items:flex-start;gap:12px;margin:6px 0 18px;font-size:14px"><input type="checkbox" name="consent" style="width:22px;height:22px;margin-top:2px;flex:none"><span>Համաձայն եմ, որ իմ անանուն պատասխանները և հավելվածի ընդհանուր թվերը (դեպքերի և լուսանկարների շարքերի քանակը) ուղարկվեն ISD Dental School-ին՝ հետազոտության համար։ Պատասխանները <b>կապված չեն</b> ձեր անվան կամ հեռախոսի հետ։ Բուժառուների տվյալներ և լուսանկարներ չեն ուղարկվում։</span></label>' +
       '<div class="row" style="justify-content:space-between"><button type="button" class="btn ghost" data-skip>Ավելի ուշ</button><button class="btn primary" type="submit">Ուղարկել</button></div></form>';
     const s = ISD.sheet(html, { sticky: true, focus: false });
     const f = s.el.querySelector("#svf");

@@ -9,7 +9,7 @@ ol{margin:0;padding:14px 24px 14px 44px;background:#163a3f;color:#d6e2df}
 pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre;overflow:auto;color:#e8f1ee}
 </style></head><body>
 <div class="top"><h1>ISD Dental School · Code.gs для Google Таблицы</h1><button id="b">Скопировать весь код</button></div>
-<ol><li><b>Обновление 6 (термин «Պերիօդոնտոլոգ»):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
+<ol><li><b>Обновление 7 — регистрация врачей (нужно сделать до лекции):</b> нажмите «Скопировать весь код» → в Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S) → вверху выберите функцию <b>refreshSummary</b> → «Выполнить» (появится лист «Գրանցում», а в «Ամփոփում» — строка «Գրանցված օգտատերեր») → «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется. Регистрации, сделанные раньше, придут в таблицу сами при следующем открытии приложения.</li><li>Первая установка (только если таблицы ещё нет): вставьте код, выберите <b>setup</b> → «Выполнить» → разрешите доступ; затем «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
 <pre id="c">/**
  * ISD Dental School — сбор анонимной анкеты и счётчиков из приложений «Պորտֆոլիո» и «Ֆոտոարձանագրություն».
  *
@@ -19,13 +19,18 @@ pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre
  *  3. Развернуть → Новое развертывание → тип «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть.
  *  4. Скопируйте URL веб-приложения (…/exec) и вставьте в assets/js/config.js → endpoint.
  *
- * Что приходит: ответы на 12 вопросов и счётчики (кол-во кейсов, серий фото, направления).
- * Чего здесь нет и не может быть: имён врачей, контактов, данных пациентов, фотографий.
+ * Что приходит:
+ *  — «Գրանցում»: регистрация врача (имя, телефон, e-mail, специализация, клиника) — один раз, с его согласия;
+ *  — «Հարցում»: анонимные ответы на 12 вопросов — НЕ связаны с регистрацией (другой ID);
+ *  — «Օգտագործում»: счётчики (кол-во кейсов, серий фото, направления) — тоже без имени.
+ * Чего здесь нет и не может быть: данных пациентов, фотографий, текстов кейсов.
  */
 
 const SH_SURVEY = &quot;Հարցում&quot;;
 const SH_STATS = &quot;Օգտագործում&quot;;
 const SH_SUMMARY = &quot;Ամփոփում&quot;;
+const SH_REG = &quot;Գրանցում&quot;;
+const REG_COLS = [&quot;Գրանցվել է&quot;, &quot;Թարմացվել է&quot;, &quot;ID&quot;, &quot;Անուն, ազգանուն&quot;, &quot;Հեռախոս&quot;, &quot;Էլ. փոստ&quot;, &quot;Մասնագիտացում&quot;, &quot;Կլինիկա / բուհ&quot;, &quot;Լուրեր դասընթացների մասին&quot;, &quot;Հավելված&quot;, &quot;Սարք&quot;];
 
 // Keep in sync with assets/js/survey.js
 const Q = [
@@ -53,8 +58,9 @@ function setup() {
   st.getRange(1, 1, 1, STAT_COLS.length).setValues([STAT_COLS]).setFontWeight(&quot;bold&quot;);
   st.setFrozenRows(1);
   (ss.getSheetByName(SH_SUMMARY) || ss.insertSheet(SH_SUMMARY, 0));
+  regSheet(ss);
   const def = ss.getSheetByName(&quot;Sheet1&quot;) || ss.getSheetByName(&quot;Лист1&quot;) || ss.getSheetByName(&quot;Թերթ1&quot;);
-  if (def &amp;&amp; ss.getSheets().length &gt; 3) ss.deleteSheet(def);
+  if (def &amp;&amp; ss.getSheets().length &gt; 4) ss.deleteSheet(def);
   refreshSummary();
   Logger.log(&quot;Таблица: &quot; + ss.getUrl());
 }
@@ -65,6 +71,7 @@ function doPost(e) {
   try {
     const d = JSON.parse(e.postData.contents);
     const ss = book();
+    if (d.type === &quot;register&quot;) return ContentService.createTextOutput(register(ss, d));
     if (d.type === &quot;survey&quot;) {
       const a = d.answers || {};
       ss.getSheetByName(SH_SURVEY).appendRow([new Date(), clip(d.installId), clip(d.app), clip(d.version)].concat(Q.map(q =&gt; clip(a[q[0]]))));
@@ -81,6 +88,35 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* Registration: one row per doctor. Same ID or same phone number → the row is updated, not duplicated
+   (e.g. the same doctor opens «Ֆոտո» on a computer after «Պորտֆոլիո» on the phone). */
+function regSheet(ss) {
+  let sh = ss.getSheetByName(SH_REG);
+  if (!sh) {
+    sh = ss.insertSheet(SH_REG, 1);
+    sh.getRange(1, 1, 1, REG_COLS.length).setValues([REG_COLS]).setFontWeight(&quot;bold&quot;);
+    sh.setFrozenRows(1);
+    sh.getRange(&quot;E:E&quot;).setNumberFormat(&quot;@&quot;);
+    sh.setColumnWidth(4, 220); sh.setColumnWidth(6, 200); sh.setColumnWidth(7, 220); sh.setColumnWidth(8, 220);
+  }
+  return sh;
+}
+function register(ss, d) {
+  const sh = regSheet(ss);
+  const id = clip(d.regId), phone = clip(d.phone), key = digits(phone);
+  if (!id || !clip(d.name) || key.length &lt; 6) return &quot;error&quot;;
+  const n = Math.max(0, sh.getLastRow() - 1);
+  const vals = n ? sh.getRange(2, 1, n, REG_COLS.length).getValues() : [];
+  let i = vals.findIndex(v =&gt; String(v[2]) === id);
+  if (i &lt; 0) i = vals.findIndex(v =&gt; digits(v[4]) === key);
+  const join = (a, b) =&gt; { const set = String(a || &quot;&quot;).split(&quot;, &quot;).filter(String); if (b &amp;&amp; set.indexOf(b) &lt; 0) set.push(b); return set.join(&quot;, &quot;); };
+  const old = i &gt;= 0 ? vals[i] : null;
+  const row = [old ? old[0] : new Date(), new Date(), old ? old[2] : id, clip(d.name), phone, clip(d.email), clip(d.role), clip(d.place),
+    d.news === true ? &quot;այո&quot; : &quot;ոչ&quot;, join(old &amp;&amp; old[9], clip(d.app)), join(old &amp;&amp; old[10], clip(d.device))];
+  if (old) sh.getRange(i + 2, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
+  return &quot;registered&quot;;
 }
 
 /* GET …/exec?summary=1 → anonymous totals for the live results page (isd-dental.vercel.app/live).
@@ -104,6 +140,7 @@ function doGet(e) {
    new answers, deleted rows, cleared cells. Run refreshSummary (or setup) once after pasting this code. */
 function refreshSummary() {
   const ss = book();
+  regSheet(ss);
   const out = ss.getSheetByName(SH_SUMMARY) || ss.insertSheet(SH_SUMMARY, 0);
   const src = &quot;&#x27;&quot; + SH_SURVEY + &quot;&#x27;!&quot;;
   const col = i =&gt; { let n = i, s = &quot;&quot;; while (n &gt; 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
@@ -111,7 +148,7 @@ function refreshSummary() {
   const rows = [
     [&quot;Հայ ստոմատոլոգները թվերով&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;],
     [&quot;Պատասխանողներ&quot;, &quot;=COUNTA(&quot; + src + &quot;A2:A)&quot;, &quot;&quot;, &quot;&quot;],
-    [&quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;],
+    [&quot;Գրանցված օգտատերեր&quot;, &quot;=COUNTA(&#x27;&quot; + SH_REG + &quot;&#x27;!C2:C)&quot;, &quot;&quot;, &quot;&quot;],
     [&quot;Հարց&quot;, &quot;Պատասխան&quot;, &quot;Քանակ&quot;, &quot;%&quot;]
   ];
   Q.forEach((q, qi) =&gt; {
@@ -131,13 +168,14 @@ function refreshSummary() {
   const put = sep =&gt; {
     const fx = f =&gt; sep === &quot;,&quot; ? f : f.replace(/,(?=(?:[^&quot;]*&quot;[^&quot;]*&quot;)*[^&quot;]*$)/g, &quot;;&quot;);
     out.getRange(2, 2).setFormula(rows[1][1]);
+    out.getRange(3, 2).setFormula(rows[2][1]);
     out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r =&gt; [fx(r[2]), fx(r[3])]));
     SpreadsheetApp.flush();
     return !/^#/.test(String(out.getRange(5, 3).getDisplayValue())) &amp;&amp; !/^#/.test(String(out.getRange(5, 4).getDisplayValue()));
   };
   if (!put(&quot;,&quot;)) put(&quot;;&quot;);
   out.getRange(1, 1).setFontSize(18).setFontWeight(&quot;bold&quot;);
-  out.getRange(2, 1, 1, 2).setFontWeight(&quot;bold&quot;);
+  out.getRange(2, 1, 2, 2).setFontWeight(&quot;bold&quot;);
   out.getRange(4, 1, 1, 4).setFontWeight(&quot;bold&quot;);
   out.getRange(5, 4, rows.length - 4, 1).setNumberFormat(&quot;0%&quot;);
   out.setColumnWidth(1, 240); out.setColumnWidth(2, 300);
@@ -156,6 +194,7 @@ function book() {
 }
 
 function clip(v) { return String(v == null ? &quot;&quot; : v).slice(0, 500); }
+function digits(v) { return String(v == null ? &quot;&quot; : v).replace(/\D/g, &quot;&quot;).replace(/^(374|0)/, &quot;&quot;); }
 function num(v) { const x = Number(v); return isFinite(x) ? x : &quot;&quot;; }
 </pre>
 <script>

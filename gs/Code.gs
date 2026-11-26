@@ -7,13 +7,18 @@
  *  3. Развернуть → Новое развертывание → тип «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть.
  *  4. Скопируйте URL веб-приложения (…/exec) и вставьте в assets/js/config.js → endpoint.
  *
- * Что приходит: ответы на 12 вопросов и счётчики (кол-во кейсов, серий фото, направления).
- * Чего здесь нет и не может быть: имён врачей, контактов, данных пациентов, фотографий.
+ * Что приходит:
+ *  — «Գրանցում»: регистрация врача (имя, телефон, e-mail, специализация, клиника) — один раз, с его согласия;
+ *  — «Հարցում»: анонимные ответы на 12 вопросов — НЕ связаны с регистрацией (другой ID);
+ *  — «Օգտագործում»: счётчики (кол-во кейсов, серий фото, направления) — тоже без имени.
+ * Чего здесь нет и не может быть: данных пациентов, фотографий, текстов кейсов.
  */
 
 const SH_SURVEY = "Հարցում";
 const SH_STATS = "Օգտագործում";
 const SH_SUMMARY = "Ամփոփում";
+const SH_REG = "Գրանցում";
+const REG_COLS = ["Գրանցվել է", "Թարմացվել է", "ID", "Անուն, ազգանուն", "Հեռախոս", "Էլ. փոստ", "Մասնագիտացում", "Կլինիկա / բուհ", "Լուրեր դասընթացների մասին", "Հավելված", "Սարք"];
 
 // Keep in sync with assets/js/survey.js
 const Q = [
@@ -41,8 +46,9 @@ function setup() {
   st.getRange(1, 1, 1, STAT_COLS.length).setValues([STAT_COLS]).setFontWeight("bold");
   st.setFrozenRows(1);
   (ss.getSheetByName(SH_SUMMARY) || ss.insertSheet(SH_SUMMARY, 0));
+  regSheet(ss);
   const def = ss.getSheetByName("Sheet1") || ss.getSheetByName("Лист1") || ss.getSheetByName("Թերթ1");
-  if (def && ss.getSheets().length > 3) ss.deleteSheet(def);
+  if (def && ss.getSheets().length > 4) ss.deleteSheet(def);
   refreshSummary();
   Logger.log("Таблица: " + ss.getUrl());
 }
@@ -53,6 +59,7 @@ function doPost(e) {
   try {
     const d = JSON.parse(e.postData.contents);
     const ss = book();
+    if (d.type === "register") return ContentService.createTextOutput(register(ss, d));
     if (d.type === "survey") {
       const a = d.answers || {};
       ss.getSheetByName(SH_SURVEY).appendRow([new Date(), clip(d.installId), clip(d.app), clip(d.version)].concat(Q.map(q => clip(a[q[0]]))));
@@ -69,6 +76,35 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* Registration: one row per doctor. Same ID or same phone number → the row is updated, not duplicated
+   (e.g. the same doctor opens «Ֆոտո» on a computer after «Պորտֆոլիո» on the phone). */
+function regSheet(ss) {
+  let sh = ss.getSheetByName(SH_REG);
+  if (!sh) {
+    sh = ss.insertSheet(SH_REG, 1);
+    sh.getRange(1, 1, 1, REG_COLS.length).setValues([REG_COLS]).setFontWeight("bold");
+    sh.setFrozenRows(1);
+    sh.getRange("E:E").setNumberFormat("@");
+    sh.setColumnWidth(4, 220); sh.setColumnWidth(6, 200); sh.setColumnWidth(7, 220); sh.setColumnWidth(8, 220);
+  }
+  return sh;
+}
+function register(ss, d) {
+  const sh = regSheet(ss);
+  const id = clip(d.regId), phone = clip(d.phone), key = digits(phone);
+  if (!id || !clip(d.name) || key.length < 6) return "error";
+  const n = Math.max(0, sh.getLastRow() - 1);
+  const vals = n ? sh.getRange(2, 1, n, REG_COLS.length).getValues() : [];
+  let i = vals.findIndex(v => String(v[2]) === id);
+  if (i < 0) i = vals.findIndex(v => digits(v[4]) === key);
+  const join = (a, b) => { const set = String(a || "").split(", ").filter(String); if (b && set.indexOf(b) < 0) set.push(b); return set.join(", "); };
+  const old = i >= 0 ? vals[i] : null;
+  const row = [old ? old[0] : new Date(), new Date(), old ? old[2] : id, clip(d.name), phone, clip(d.email), clip(d.role), clip(d.place),
+    d.news === true ? "այո" : "ոչ", join(old && old[9], clip(d.app)), join(old && old[10], clip(d.device))];
+  if (old) sh.getRange(i + 2, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
+  return "registered";
 }
 
 /* GET …/exec?summary=1 → anonymous totals for the live results page (isd-dental.vercel.app/live).
@@ -92,6 +128,7 @@ function doGet(e) {
    new answers, deleted rows, cleared cells. Run refreshSummary (or setup) once after pasting this code. */
 function refreshSummary() {
   const ss = book();
+  regSheet(ss);
   const out = ss.getSheetByName(SH_SUMMARY) || ss.insertSheet(SH_SUMMARY, 0);
   const src = "'" + SH_SURVEY + "'!";
   const col = i => { let n = i, s = ""; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
@@ -99,7 +136,7 @@ function refreshSummary() {
   const rows = [
     ["Հայ ստոմատոլոգները թվերով", "", "", ""],
     ["Պատասխանողներ", "=COUNTA(" + src + "A2:A)", "", ""],
-    ["", "", "", ""],
+    ["Գրանցված օգտատերեր", "=COUNTA('" + SH_REG + "'!C2:C)", "", ""],
     ["Հարց", "Պատասխան", "Քանակ", "%"]
   ];
   Q.forEach((q, qi) => {
@@ -119,13 +156,14 @@ function refreshSummary() {
   const put = sep => {
     const fx = f => sep === "," ? f : f.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g, ";");
     out.getRange(2, 2).setFormula(rows[1][1]);
+    out.getRange(3, 2).setFormula(rows[2][1]);
     out.getRange(5, 3, rows.length - 4, 2).setFormulas(rows.slice(4).map(r => [fx(r[2]), fx(r[3])]));
     SpreadsheetApp.flush();
     return !/^#/.test(String(out.getRange(5, 3).getDisplayValue())) && !/^#/.test(String(out.getRange(5, 4).getDisplayValue()));
   };
   if (!put(",")) put(";");
   out.getRange(1, 1).setFontSize(18).setFontWeight("bold");
-  out.getRange(2, 1, 1, 2).setFontWeight("bold");
+  out.getRange(2, 1, 2, 2).setFontWeight("bold");
   out.getRange(4, 1, 1, 4).setFontWeight("bold");
   out.getRange(5, 4, rows.length - 4, 1).setNumberFormat("0%");
   out.setColumnWidth(1, 240); out.setColumnWidth(2, 300);
@@ -144,4 +182,5 @@ function book() {
 }
 
 function clip(v) { return String(v == null ? "" : v).slice(0, 500); }
+function digits(v) { return String(v == null ? "" : v).replace(/\D/g, "").replace(/^(374|0)/, ""); }
 function num(v) { const x = Number(v); return isFinite(x) ? x : ""; }
