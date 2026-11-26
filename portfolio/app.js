@@ -8,7 +8,7 @@
   ISD.registerSW();
   ISD.persist();
 
-  const DISC = ["Թերապևտիկ ստոմատոլոգիա", "Էնդոդոնտիա", "Պարոդոնտոլոգիա", "Վիրաբուժություն", "Իմպլանտոլոգիա", "Օրթոպեդիկ ստոմատոլոգիա", "Օրթոդոնտիա", "Մանկական ստոմատոլոգիա", "Էսթետիկ ստոմատոլոգիա", "Հիգիենա և կանխարգելում", "Համալիր վերականգնում"];
+  const DISC = ["Թերապևտիկ ստոմատոլոգիա", "Էնդոդոնտիա", "Պերիօդոնտոլոգիա", "Վիրաբուժություն", "Իմպլանտոլոգիա", "Օրթոպեդիկ ստոմատոլոգիա", "Օրթոդոնտիա", "Մանկական ստոմատոլոգիա", "Էսթետիկ ստոմատոլոգիա", "Հիգիենա և կանխարգելում", "Համալիր վերականգնում"];
   const ROLES = { operator: "Կատարող", assistant: "Օգնական", observer: "Դիտորդ" };
   const STATUS = { active: "Ընթացքում", done: "Ավարտված", fu: "Հետևման փուլ" };
   const now = () => Date.now();
@@ -129,12 +129,12 @@
         f("medical", "Բժշկական անամնեզ", { area: true, rows: 2, ph: "Հիվանդություններ, դեղեր, ալերգիաներ" }) + f("dental", "Ստոմատոլոգիական անամնեզ", { area: true, rows: 2, ph: "Նախկին բուժում, հիգիենա" }) + f("habits", "Սովորություններ և ակնկալիքներ", { area: true, rows: 2, ph: "Ծխել, բրուքսիզմ, էսթետիկ ակնկալիքներ" }), openSet.has("b")) +
       sec("cx", "Հետազոտություն և լուսանկարներ", '<p class="hint">Լուսանկարների ստանդարտ շարքը պատրաստեք <b>«Ֆոտո»</b> հավելվածում և կցեք այստեղ։ «Նախքան» շարքը կօգտագործվի հետազոտության սլայդներում, «Հետո» շարքը՝ արդյունքի։</p><div id="series"></div>' +
         '<div class="row" style="margin-bottom:16px"><a class="btn" href="../photo/#n-' + esc(c.id) + '">' + icon("camera") + 'Նոր շարք «Ֆոտո»-ում</a><button class="btn ghost" id="link-series">' + icon("link") + "Կցել առկա շարք</button></div>" +
-        f("findingsExtra", "Արտաբերանային գտածոներ", { area: true, rows: 2 }) + f("findingsIntra", "Ներբերանային գտածոներ", { area: true, rows: 3, ph: "Պարոդոնտալ վիճակ, ատամներ, կծվածք" }) +
+        f("findingsExtra", "Արտաբերանային գտածոներ", { area: true, rows: 2 }) + f("findingsIntra", "Ներբերանային գտածոներ", { area: true, rows: 3, ph: "Պերիօդոնտալ վիճակ, ատամներ, կծվածք" }) +
         '<label class="f"><span>Ռենտգեն / ԿԿՏ</span></label><div class="thumbs" id="xrays"></div><button class="btn small" id="add-x" style="margin:8px 0 14px">' + icon("plus") + "Ավելացնել պատկեր</button>" +
         f("radioFindings", "Ռենտգենաբանական գտածոներ", { area: true, rows: 2, ph: "Մեկ կետ՝ մեկ տող" }), openSet.has("cx")) +
       sec("d", "Ախտորոշում", f("diagnosis", "Ախտորոշում", { area: true, rows: 2, ph: "Ընդունված դասակարգմամբ (օր.՝ 2017 AAP/EFP)" }) + f("problems", "Խնդիրների ցուցակ", { area: true, rows: 3, ph: "Մեկ խնդիր՝ մեկ տող, ըստ առաջնահերթության" }), openSet.has("d")) +
       sec("e", "Բուժման տարբերակներ և պլան", '<h3 style="margin:4px 0 10px">Տարբերակներ</h3><div id="options"></div><button class="btn small" id="add-opt">' + icon("plus") + "Տարբերակ</button>" +
-        '<div style="margin-top:14px">' + f("choiceWhy", "Ինչու ընտրվեց այս տարբերակը", { area: true, rows: 2 }) + '</div><h3 style="margin:8px 0 10px">Փուլային պլան</h3><div id="plan"></div><div class="row"><button class="btn small" id="add-ph">' + icon("plus") + 'Փուլ</button><button class="btn small ghost" id="preset-ph">Պարոդոնտալ-օրթոպեդիկ 4 փուլ</button></div>', openSet.has("e")) +
+        '<div style="margin-top:14px">' + f("choiceWhy", "Ինչու ընտրվեց այս տարբերակը", { area: true, rows: 2 }) + '</div><h3 style="margin:8px 0 10px">Փուլային պլան</h3><div id="plan"></div><div class="row"><button class="btn small" id="add-ph">' + icon("plus") + 'Փուլ</button><button class="btn small ghost" id="preset-ph">Պերիօդոնտալ-օրթոպեդիկ 4 փուլ</button></div>', openSet.has("e")) +
       sec("f", "Բուժման փուլեր", '<p class="hint">Մեկ փուլ՝ մեկ սլայդ։ Ամսաթիվ, ինչ արվեց, ինչ նյութերով, ինչու։ Մինչև 4 լուսանկար յուրաքանչյուր փուլում։</p><div id="steps"></div><button class="btn small" id="add-step">' + icon("plus") + "Փուլ</button>", openSet.has("f")) +
       sec("g", "Արդյունք և հետևում", f("outcome", "Արդյունք", { area: true, ph: "Կլինիկական, ռենտգենաբանական, բուժառուի գնահատական, բարդություններ" }) +
         f("compareView", "«Նախքան / հետո» սլայդի տեսքը", { select: [["frontal", "Առջևից՝ ետքաշիչներով"], ["smile", "Ժպիտ"], ["face", "Դեմք"], ["occU", "Վերին ծնոտ"], ["occL", "Ստորին ծնոտ"]] }) +

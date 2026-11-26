@@ -9,7 +9,7 @@ ol{margin:0;padding:14px 24px 14px 44px;background:#163a3f;color:#d6e2df}
 pre{margin:0;padding:20px 24px;font:13px/1.45 Consolas,monospace;white-space:pre;overflow:auto;color:#e8f1ee}
 </style></head><body>
 <div class="top"><h1>ISD Dental School · Code.gs для Google Таблицы</h1><button id="b">Скопировать весь код</button></div>
-<ol><li><b>Обновление 5 (живая сводка + страница результатов /live):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
+<ol><li><b>Обновление 6 (термин «Պերիօդոնտոլոգ»):</b> вставьте код, сохраните, выберите <b>refreshSummary</b> → «Выполнить»; затем «Начать развертывание» → «Управление развертываниями» → ✏ → Версия: «Новая версия» → «Развернуть». Адрес …/exec не меняется.</li><li>Нажмите «Скопировать весь код».</li><li>В Apps Script выделите всё в Код.gs (Ctrl+A), вставьте (Ctrl+V), сохраните (Ctrl+S).</li><li>Вверху выберите функцию <b>setup</b> → «Выполнить» → разрешите доступ.</li><li>«Начать развертывание» → «Новое развертывание» → ⚙ «Веб-приложение»; Выполнять как: «Я»; Доступ: «Все» → Развернуть → скопируйте URL (…/exec).</li></ol>
 <pre id="c">/**
  * ISD Dental School — сбор анонимной анкеты и счётчиков из приложений «Պորտֆոլիո» и «Ֆոտոարձանագրություն».
  *
@@ -29,7 +29,7 @@ const SH_SUMMARY = &quot;Ամփոփում&quot;;
 
 // Keep in sync with assets/js/survey.js
 const Q = [
-  [&quot;role&quot;, &quot;Մասնագիտացում&quot;, [&quot;Ուսանող&quot;, &quot;Օրդինատոր&quot;, &quot;Ընդհանուր (ընտանեկան) ստոմատոլոգ&quot;, &quot;Թերապևտ&quot;, &quot;Օրթոպեդ&quot;, &quot;Վիրաբույժ, իմպլանտոլոգ&quot;, &quot;Պարոդոնտոլոգ&quot;, &quot;Օրթոդոնտ&quot;, &quot;Մանկական ստոմատոլոգ&quot;, &quot;Այլ&quot;]],
+  [&quot;role&quot;, &quot;Մասնագիտացում&quot;, [&quot;Ուսանող&quot;, &quot;Օրդինատոր&quot;, &quot;Ընդհանուր (ընտանեկան) ստոմատոլոգ&quot;, &quot;Թերապևտ&quot;, &quot;Օրթոպեդ&quot;, &quot;Վիրաբույժ, իմպլանտոլոգ&quot;, &quot;Պերիօդոնտոլոգ&quot;, &quot;Օրթոդոնտ&quot;, &quot;Մանկական ստոմատոլոգ&quot;, &quot;Այլ&quot;]],
   [&quot;exp&quot;, &quot;Փորձ&quot;, [&quot;Դեռ սովորում եմ&quot;, &quot;2 տարուց քիչ&quot;, &quot;2–5 տարի&quot;, &quot;5–10 տարի&quot;, &quot;10 տարուց ավել&quot;]],
   [&quot;region&quot;, &quot;Որտեղ է աշխատում&quot;, [&quot;Երևան&quot;, &quot;Մարզ&quot;, &quot;Արտերկիր&quot;]],
   [&quot;work&quot;, &quot;Աշխատանքի ձև&quot;, [&quot;Սեփական կլինիկա&quot;, &quot;Վարձու աշխատող&quot;, &quot;Աթոռի վարձակալություն&quot;, &quot;Համալսարան / կլինիկա-բազա&quot;, &quot;Դեռ չեմ աշխատում&quot;]],

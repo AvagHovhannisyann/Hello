@@ -1,5 +1,5 @@
 /* ISD Dental School — offline cache for both apps. Bump VERSION on every deploy. */
-const VERSION = "isd-v1.0.7";
+const VERSION = "isd-v1.0.8";
 const FILES = [
   "./",
   "./portfolio/",
